@@ -150,14 +150,6 @@ const DEFAULT_PAGE_THEME: PageThemeConfig = {
   layout: 'compact',
 }
 
-const PAGE_THEME_PRESETS: Array<{ key: PageThemePreset; label: string; theme: PageThemeConfig }> = [
-  { key: 'minimal', label: 'Minimal', theme: DEFAULT_PAGE_THEME },
-  { key: 'midnight', label: 'Midnight', theme: { preset: 'midnight', accent_color: '#8B5CF6', background_color: '#0B1020', card_color: '#151B2E', text_color: '#F8FAFC', card_style: 'glass', button_style: 'pill', layout: 'compact' } },
-  { key: 'cream', label: 'Cream', theme: { preset: 'cream', accent_color: '#D97706', background_color: '#FFF7ED', card_color: '#FFFBF5', text_color: '#2F2518', card_style: 'soft', button_style: 'rounded', layout: 'spacious' } },
-  { key: 'neon', label: 'Neon', theme: { preset: 'neon', accent_color: '#06B6D4', background_color: '#ECFEFF', card_color: '#FFFFFF', text_color: '#083344', card_style: 'solid', button_style: 'square', layout: 'compact' } },
-  { key: 'rose', label: 'Rose', theme: { preset: 'rose', accent_color: '#E11D48', background_color: '#FFF1F2', card_color: '#FFFFFF', text_color: '#3F1722', card_style: 'soft', button_style: 'pill', layout: 'spacious' } },
-]
-
 const normalizePageTheme = (theme?: Partial<PageThemeConfig> | null): PageThemeConfig => ({
   ...DEFAULT_PAGE_THEME,
   ...(theme ?? {}),
@@ -652,95 +644,6 @@ export default function ProductsPage() {
                         className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-[#394BE8] focus:bg-white focus:ring-4 focus:ring-[#EEF1FF]"
                       />
                       <p className="text-right text-[11px] text-slate-400">{editForm.bio.length}/{PROFILE_BIO_MAX_LENGTH}</p>
-                    </div>
-                    <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[11px] font-semibold tracking-wide uppercase text-slate-400">Page design</p>
-                          <p className="mt-0.5 text-xs text-slate-400">Theme, colors, cards, and buttons</p>
-                        </div>
-                        <div
-                          className="h-8 w-8 rounded-xl border border-white shadow-sm"
-                          style={{ background: editForm.theme_config.accent_color }}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-5 gap-1.5">
-                        {PAGE_THEME_PRESETS.map(({ key, label, theme }) => (
-                          <button
-                            key={key}
-                            type="button"
-                            onClick={() => setEditForm({ ...editForm, theme_config: theme })}
-                            className={`h-9 rounded-lg border text-[11px] font-semibold transition ${
-                              editForm.theme_config.preset === key
-                                ? 'border-[#394BE8] bg-white text-[#394BE8] shadow-sm'
-                                : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          ['Accent', 'accent_color'],
-                          ['Background', 'background_color'],
-                          ['Cards', 'card_color'],
-                          ['Text', 'text_color'],
-                        ].map(([label, key]) => (
-                          <label key={key} className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2">
-                            <span className="text-[11px] font-medium text-slate-500">{label}</span>
-                            <input
-                              type="color"
-                              value={editForm.theme_config[key as keyof PageThemeConfig] as string}
-                              onChange={(e) => setEditForm({
-                                ...editForm,
-                                theme_config: { ...editForm.theme_config, preset: 'minimal', [key]: e.target.value },
-                              })}
-                              className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0"
-                            />
-                          </label>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2">
-                        <label className="space-y-1">
-                          <span className="text-[11px] font-medium text-slate-400">Cards</span>
-                          <select
-                            value={editForm.theme_config.card_style}
-                            onChange={(e) => setEditForm({ ...editForm, theme_config: { ...editForm.theme_config, card_style: e.target.value as PageCardStyle } })}
-                            className="h-8 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none"
-                          >
-                            <option value="soft">Soft</option>
-                            <option value="solid">Solid</option>
-                            <option value="glass">Glass</option>
-                          </select>
-                        </label>
-                        <label className="space-y-1">
-                          <span className="text-[11px] font-medium text-slate-400">Buttons</span>
-                          <select
-                            value={editForm.theme_config.button_style}
-                            onChange={(e) => setEditForm({ ...editForm, theme_config: { ...editForm.theme_config, button_style: e.target.value as PageButtonStyle } })}
-                            className="h-8 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none"
-                          >
-                            <option value="rounded">Rounded</option>
-                            <option value="pill">Pill</option>
-                            <option value="square">Square</option>
-                          </select>
-                        </label>
-                        <label className="space-y-1">
-                          <span className="text-[11px] font-medium text-slate-400">Spacing</span>
-                          <select
-                            value={editForm.theme_config.layout}
-                            onChange={(e) => setEditForm({ ...editForm, theme_config: { ...editForm.theme_config, layout: e.target.value as PageLayout } })}
-                            className="h-8 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none"
-                          >
-                            <option value="compact">Compact</option>
-                            <option value="spacious">Spacious</option>
-                          </select>
-                        </label>
-                      </div>
                     </div>
                   </div>
                 </div>

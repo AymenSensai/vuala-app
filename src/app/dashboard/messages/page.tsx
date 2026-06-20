@@ -218,8 +218,8 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="min-h-full bg-[#FCFCFD] p-[18px_24px_36px_24px]">
-      <div className="max-w-[1440px] mx-auto">
+    <div className="flex min-h-full flex-col bg-[#FCFCFD] p-[18px_24px_36px_24px]">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col">
         <section className={`${card} col-span-12 grid grid-cols-4 gap-3`}>
           {[
             { label: 'Total messages', value: counts.total },
@@ -279,8 +279,8 @@ export default function InboxPage() {
           </div>
         </section>
 
-        <section className="col-span-12 mt-3.5">
-          <div className="overflow-hidden rounded-[10px] border border-[#e6e8ec] bg-white">
+        <section className="flex flex-1 flex-col col-span-12 mt-3.5">
+          <div className={`flex w-full flex-col overflow-hidden rounded-[10px] border border-[#e6e8ec] bg-white ${filtered.length === 0 ? 'min-h-0 flex-1' : ''}`}>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse" style={{ minWidth: 960 }}>
                 <thead>
@@ -330,16 +330,19 @@ export default function InboxPage() {
                       </td>
                     </tr>
                   ))}
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-9 text-center text-[13px] text-[#8b909d]">
-                        No messages match the current filters.
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
+
+            {filtered.length === 0 && (
+              <div className="flex flex-1 flex-col items-center justify-center gap-1.5 px-4 text-center">
+                <p className="text-[14px] font-semibold text-[#15171f]">No messages yet</p>
+                <p className="max-w-[320px] text-[13px] leading-5 text-[#8b909d]">
+                  When visitors reach out from your page, their messages will show up here.
+                </p>
+              </div>
+            )}
+
             <div className="border-t border-[#f0f1f4] bg-[#fafbfc] px-[14px] py-2 text-[12px] text-[#8b909d]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span>
@@ -446,6 +449,7 @@ export default function InboxPage() {
           </div>
         </>
       )}
+
     </div>
   )
 }

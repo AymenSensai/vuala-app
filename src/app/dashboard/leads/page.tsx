@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import api from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import {
-  Check, Copy, Download, Heart,
-  ChevronDown, Mail, Plus, Search, Send, Star, TrendingUp, Trophy, X,
+  Check, Download, Heart,
+  ChevronDown, Mail, Search, Send, Star, TrendingUp, Trophy, X,
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -337,43 +336,14 @@ export default function WishlistsPage() {
     )
   }
 
-  const isEmpty = leads.length === 0
-
   return (
-    <div className="min-h-full bg-[#FCFCFD] p-[18px_24px_44px_24px]">
-      <div className="max-w-[1440px] mx-auto">
+    <div className="flex min-h-full flex-col bg-[#FCFCFD] p-[18px_24px_44px_24px]">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col">
 
         {/* ── Page header ─────────────────────────────── */}
         <header className="mb-3" />
 
-        {isEmpty ? (
-          /* ── Empty state ────────────────────────────── */
-          <div className="bg-white border border-[#e6e8ec] rounded-[12px] px-6 py-16 text-center">
-            <div className="w-12 h-12 rounded-[12px] bg-[#eef0fd] text-[#394be8] flex items-center justify-center mx-auto mb-[18px]">
-              <Heart className="w-[22px] h-[22px]" />
-            </div>
-            <h2 className="text-[18px] font-semibold tracking-tight text-[#15171f] mb-2">No wishlists yet</h2>
-            <p className="text-[13.5px] text-[#5b606e] leading-[1.55] max-w-[420px] mx-auto">
-              Create a coming-soon item, turn on wishlists, and share your storefront.
-              When visitors wishlist something, they&apos;ll show up here so you know who to contact at launch.
-            </p>
-            <div className="flex flex-wrap gap-2 justify-center mt-[22px]">
-              <Link href="/dashboard/products/new"
-                className="inline-flex items-center gap-[6px] text-[13px] font-semibold px-[11px] py-[6px] rounded-[8px] bg-[#394be8] text-white hover:bg-[#2f3fd1] transition-colors no-underline">
-                <Plus className="w-[14px] h-[14px]" /> Create a coming-soon item
-              </Link>
-              <Link href="/dashboard/products"
-                className="inline-flex items-center gap-[6px] text-[13px] font-semibold px-[11px] py-[6px] rounded-[8px] border border-[#e6e8ec] bg-white text-[#15171f] hover:bg-[#f4f5f7] transition-colors no-underline">
-                <Heart className="w-[14px] h-[14px]" /> Enable wishlist
-              </Link>
-              <button type="button" onClick={copyStorefrontLink}
-                className="inline-flex items-center gap-[6px] text-[13px] font-semibold px-[11px] py-[6px] rounded-[8px] border-0 bg-transparent text-[#5b606e] cursor-pointer hover:bg-[#eceef2] hover:text-[#15171f] transition-colors">
-                <Copy className="w-[14px] h-[14px]" /> Copy storefront link
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
+        <>
             {/* ── Summary cards ──────────────────────────── */}
             <section className="grid grid-cols-4 gap-[10px] mb-3 max-[1100px]:grid-cols-2 max-[620px]:grid-cols-1" aria-label="Summary">
               {[
@@ -428,30 +398,28 @@ export default function WishlistsPage() {
                 activeKey={sourceFilter}
                 onSelect={(key) => { setSourceFilter(key); setPage(1) }}
               />
-              {!isEmpty && (
-                <div className="ml-auto flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled
-                    title="Direct messaging to your wishlists is coming soon"
-                    className="inline-flex items-center gap-[7px] h-[32px] text-[13px] font-semibold px-[11px] rounded-[8px] border border-[#e6e8ec] bg-white text-[#8b909d] cursor-not-allowed whitespace-nowrap"
-                  >
-                    <Mail className="w-[14px] h-[14px]" />
-                    Contact wishlists
-                    <span className="inline-flex items-center rounded-full bg-[#fdf3e3] text-[#92600a] text-[10px] font-bold uppercase tracking-[0.04em] px-[7px] py-[2px] leading-none">
-                      Coming soon
-                    </span>
-                  </button>
-                  <button type="button" onClick={() => exportWishlists(visible)}
-                    className="inline-flex items-center gap-[6px] h-[32px] text-[13px] font-semibold px-[11px] rounded-[8px] border-0 cursor-pointer bg-[#394be8] text-white hover:bg-[#2f3fd1] transition-colors whitespace-nowrap">
-                    <Download className="w-[14px] h-[14px]" /> Export wishlists
-                  </button>
-                </div>
-              )}
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled
+                  title="Direct messaging to your wishlists is coming soon"
+                  className="inline-flex items-center gap-[7px] h-[32px] text-[13px] font-semibold px-[11px] rounded-[8px] border border-[#e6e8ec] bg-white text-[#8b909d] cursor-not-allowed whitespace-nowrap"
+                >
+                  <Mail className="w-[14px] h-[14px]" />
+                  Contact wishlists
+                  <span className="inline-flex items-center rounded-full bg-[#fdf3e3] text-[#92600a] text-[10px] font-bold uppercase tracking-[0.04em] px-[7px] py-[2px] leading-none">
+                    Coming soon
+                  </span>
+                </button>
+                <button type="button" onClick={() => exportWishlists(visible)}
+                  className="inline-flex items-center gap-[6px] h-[32px] text-[13px] font-semibold px-[11px] rounded-[8px] border-0 cursor-pointer bg-[#394be8] text-white hover:bg-[#2f3fd1] transition-colors whitespace-nowrap">
+                  <Download className="w-[14px] h-[14px]" /> Export wishlists
+                </button>
+              </div>
             </div>
 
             {/* ── Table card ─────────────────────────────── */}
-            <div className="w-full bg-white border border-[#e6e8ec] rounded-[10px] overflow-hidden">
+            <div className={`flex w-full flex-col bg-white border border-[#e6e8ec] rounded-[10px] overflow-hidden ${visible.length === 0 ? 'min-h-0 flex-1' : ''}`}>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse" style={{ minWidth: 960 }}>
                   <thead>
@@ -503,16 +471,19 @@ export default function WishlistsPage() {
                         </td>
                       </tr>
                     ))}
-                    {visible.length === 0 && (
-                      <tr>
-                        <td colSpan={6} className="text-center px-4 py-9 text-[#8b909d] text-[13px]">
-                          No wishlists match — try clearing a filter.
-                        </td>
-                      </tr>
-                    )}
                   </tbody>
                 </table>
               </div>
+
+              {visible.length === 0 && (
+                <div className="flex flex-1 flex-col items-center justify-center gap-1.5 px-4 text-center">
+                  <p className="text-[14px] font-semibold text-[#15171f]">No wishlists yet</p>
+                  <p className="max-w-[320px] text-[13px] leading-5 text-[#8b909d]">
+                    Once visitors start wishlisting items on your page, they&apos;ll show up here.
+                  </p>
+                </div>
+              )}
+
               <div className="px-[14px] py-2 text-[12px] text-[#8b909d] border-t border-[#f0f1f4] bg-[#fafbfc]">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <span>
@@ -565,8 +536,7 @@ export default function WishlistsPage() {
                 </div>
               </div>
             </div>
-          </>
-        )}
+        </>
       </div>
 
       {/* Bulk bar */}

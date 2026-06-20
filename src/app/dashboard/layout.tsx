@@ -66,9 +66,18 @@ function RoadmapIcon({ className }: { className?: string }) {
   )
 }
 
+function PageDesignIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" className={className}>
+      <path fill="currentColor" fillRule="evenodd" clipRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75c.616 0 1.116-.5 1.116-1.116 0-.286-.108-.55-.286-.755a1.115 1.115 0 0 1-.27-.73c0-.616.5-1.107 1.116-1.107h1.3c2.764 0 5.004-2.24 5.004-5.004 0-4.832-4.365-8.788-9.78-8.788Zm-5.4 7.65a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Zm3.6-3.6a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Zm5.4 0a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Zm3 4.5a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Z" />
+    </svg>
+  )
+}
+
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: DashboardIcon },
   { href: '/dashboard/products', label: 'My Page', icon: StoreIcon },
+  { href: '/dashboard/page-design', label: 'Page design', icon: PageDesignIcon },
   { href: '/dashboard/leads', label: 'Wishlists', icon: LeadsIcon },
   { href: '/dashboard/messages', label: 'Inbox', icon: InboxIcon },
   { href: '/dashboard/features', label: 'Roadmap', icon: RoadmapIcon },

@@ -15,7 +15,14 @@ interface StorefrontData {
   avatar_url: string | null
   social_links: { platform: string; url: string }[]
   theme_config: Partial<PageThemeConfig> | null
+  feedback_enabled: boolean
+  feedback_greeting: string | null
+  feedback_title: string | null
+  feedback_subtitle: string | null
+  feedback_types: MessageType[] | null
 }
+
+type PageSection = 'products' | 'roadmap'
 
 type PageThemeConfig = {
   preset: 'minimal' | 'midnight' | 'cream' | 'neon' | 'rose'
@@ -26,6 +33,14 @@ type PageThemeConfig = {
   card_style: 'soft' | 'solid' | 'glass'
   button_style: 'rounded' | 'pill' | 'square'
   layout: 'compact' | 'spacious'
+  font_family: 'sans' | 'serif' | 'mono' | 'rounded'
+  heading_weight: 'bold' | 'black'
+  shadow_style: 'none' | 'soft' | 'bold'
+  background_style: 'solid' | 'gradient'
+  gradient_to: string
+  gradient_angle: number
+  section_order: PageSection[]
+  section_visibility: { roadmap: boolean; social_links: boolean }
 }
 
 interface Product {
@@ -117,11 +132,21 @@ const DEFAULT_PAGE_THEME: PageThemeConfig = {
   card_style: 'soft',
   button_style: 'rounded',
   layout: 'compact',
+  font_family: 'sans',
+  heading_weight: 'bold',
+  shadow_style: 'soft',
+  background_style: 'solid',
+  gradient_to: '#E2E8F0',
+  gradient_angle: 135,
+  section_order: ['products', 'roadmap'],
+  section_visibility: { roadmap: true, social_links: true },
 }
 
 const normalizePageTheme = (theme?: Partial<PageThemeConfig> | null): PageThemeConfig => ({
   ...DEFAULT_PAGE_THEME,
   ...(theme ?? {}),
+  section_order: theme?.section_order?.length ? theme.section_order : DEFAULT_PAGE_THEME.section_order,
+  section_visibility: { ...DEFAULT_PAGE_THEME.section_visibility, ...(theme?.section_visibility ?? {}) },
 })
 
 const radiusForButton = (style: PageThemeConfig['button_style']) => (
@@ -130,6 +155,30 @@ const radiusForButton = (style: PageThemeConfig['button_style']) => (
 
 const radiusForCard = (style: PageThemeConfig['card_style']) => (
   style === 'solid' ? '10px' : style === 'glass' ? '20px' : '14px'
+)
+
+const FONT_STACKS: Record<PageThemeConfig['font_family'], string> = {
+  sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
+  mono: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+  rounded: '"SF Pro Rounded", "Varela Round", Verdana, sans-serif',
+}
+
+const HEADING_WEIGHTS: Record<PageThemeConfig['heading_weight'], number> = {
+  bold: 700,
+  black: 900,
+}
+
+const SHADOWS: Record<PageThemeConfig['shadow_style'], string> = {
+  none: 'none',
+  soft: '0 14px 40px -30px rgba(15,23,42,0.38)',
+  bold: '0 20px 45px -12px rgba(15,23,42,0.45)',
+}
+
+const backgroundFor = (theme: PageThemeConfig) => (
+  theme.background_style === 'gradient'
+    ? `linear-gradient(${theme.gradient_angle}deg, ${theme.background_color}, ${theme.gradient_to})`
+    : theme.background_color
 )
 
 export default function StorefrontPage() {
@@ -158,6 +207,20 @@ export default function StorefrontPage() {
   // it shows up as a permanently "live" visitor and inflates traffic stats
   // every time someone opens their own page editor.
   const isEmbeddedPreview = typeof window !== 'undefined' && window.self !== window.top
+  const [previewThemeOverride, setPreviewThemeOverride] = useState<Partial<PageThemeConfig> | null>(null)
+
+  useEffect(() => {
+    if (!isEmbeddedPreview) return
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return
+      if (event.data?.type !== 'vuala-theme-preview') return
+      setPreviewThemeOverride(event.data.theme ?? null)
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [isEmbeddedPreview])
 
   const clientAnalyticsMetadata = () => {
     const params = new URLSearchParams(window.location.search)
@@ -254,11 +317,12 @@ export default function StorefrontPage() {
   }
 
   const openMessageComposer = () => {
+    const allowedTypes = storefront?.feedback_types?.length ? storefront.feedback_types : MESSAGE_TYPES.map((t) => t.value)
     setMessageOpen(true)
     setMessageBody('')
     setMessageName('')
     setMessageEmail('')
-    setMessageType('feedback')
+    setMessageType(allowedTypes[0] ?? 'feedback')
     setMessageSent(false)
     setMessageError(null)
   }
@@ -302,7 +366,7 @@ export default function StorefrontPage() {
   const wishlistMenuProduct = wishlistMenuProductId
     ? products.find((product) => product.id === wishlistMenuProductId) ?? null
     : null
-  const pageTheme = normalizePageTheme(storefront?.theme_config)
+  const pageTheme = normalizePageTheme(previewThemeOverride ?? storefront?.theme_config)
   const pageSpacing = pageTheme.layout === 'spacious' ? 'space-y-10' : 'space-y-8'
   const cardBorderColor = pageTheme.card_style === 'glass' ? 'rgba(255,255,255,0.34)' : 'rgba(15,23,42,0.10)'
 
@@ -325,26 +389,34 @@ export default function StorefrontPage() {
     <div
       className="storefront-page min-h-screen"
       style={{
-        '--sf-bg': pageTheme.background_color,
+        '--sf-bg': backgroundFor(pageTheme),
         '--sf-card': pageTheme.card_color,
         '--sf-text': pageTheme.text_color,
         '--sf-accent': pageTheme.accent_color,
         '--sf-card-radius': radiusForCard(pageTheme.card_style),
         '--sf-button-radius': radiusForButton(pageTheme.button_style),
         '--sf-border': cardBorderColor,
+        '--sf-shadow': SHADOWS[pageTheme.shadow_style],
+        '--sf-font': FONT_STACKS[pageTheme.font_family],
+        '--sf-heading-weight': HEADING_WEIGHTS[pageTheme.heading_weight],
       } as CSSProperties}
     >
       <style>{`
         .storefront-page {
           background: var(--sf-bg);
           color: var(--sf-text);
+          font-family: var(--sf-font);
+        }
+        .storefront-page h1,
+        .storefront-page h2 {
+          font-weight: var(--sf-heading-weight);
         }
         .storefront-page .sf-card {
           background: var(--sf-card);
           border-color: var(--sf-border);
           border-radius: var(--sf-card-radius);
+          box-shadow: var(--sf-shadow);
           ${pageTheme.card_style === 'glass' ? 'backdrop-filter: blur(18px); background: color-mix(in srgb, var(--sf-card) 74%, transparent);' : ''}
-          ${pageTheme.card_style === 'solid' ? 'box-shadow: 0 1px 0 rgba(15,23,42,0.06);' : 'box-shadow: 0 14px 40px -30px rgba(15,23,42,0.38);'}
         }
         .storefront-page .sf-action {
           background: var(--sf-accent);
@@ -365,11 +437,11 @@ export default function StorefrontPage() {
           color: var(--sf-accent);
         }
       `}</style>
-      <div className={`max-w-2xl mx-auto px-4 py-8 ${pageSpacing}`}>
+      <div className={`flex max-w-2xl flex-col mx-auto px-4 py-8 ${pageSpacing}`}>
 
         {/* Profile header */}
         {storefront && (
-          <div className="flex flex-col items-center text-center gap-3 pt-4">
+          <div className="flex flex-col items-center text-center gap-3 pt-4" style={{ order: -10 }}>
             {storefront.avatar_url && (
               <img src={storefront.avatar_url} alt={storefront.display_name} className="h-28 w-28 rounded-full object-cover" />
             )}
@@ -379,7 +451,7 @@ export default function StorefrontPage() {
                 <p className="mt-1 text-base text-slate-700">{storefront.bio}</p>
               )}
             </div>
-            {storefront.social_links.length > 0 && (
+            {pageTheme.section_visibility.social_links && storefront.social_links.length > 0 && (
               <div className="flex items-center gap-5 mt-1">
                 {storefront.social_links.map(({ platform, url }) => {
                   const Icon = socialIcon[platform]
@@ -397,7 +469,7 @@ export default function StorefrontPage() {
 
         {/* Products */}
         {products.length > 0 && (
-          <section>
+          <section style={{ order: pageTheme.section_order.indexOf('products') }}>
             <div className="space-y-3">
               {products.map((product) => {
                 const Icon = typeIcon[product.type]
@@ -604,8 +676,8 @@ export default function StorefrontPage() {
         )}
 
         {/* Shared roadmaps */}
-        {roadmaps.length > 0 && (
-          <section className="space-y-3">
+        {pageTheme.section_visibility.roadmap && roadmaps.length > 0 && (
+          <section className="space-y-3" style={{ order: pageTheme.section_order.indexOf('roadmap') }}>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Coming next</p>
               <h2 className="mt-1 text-lg font-bold text-slate-900">Public roadmap</h2>
@@ -653,17 +725,18 @@ export default function StorefrontPage() {
         )}
 
         {/* Powered by */}
-        <div className="text-center">
+        <div className="text-center" style={{ order: 10 }}>
           <Link href="/" className="text-xs text-slate-300 hover:text-slate-400 transition-colors">
             Powered by Vuala
           </Link>
         </div>
       </div>
 
+      {storefront?.feedback_enabled !== false && (
       <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2">
         {!messageOpen && (
           <span className="pointer-events-none feedback-badge rounded-full border border-slate-200 bg-white px-3 py-1 text-[12px] font-medium text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
-            Connect with {username}!
+            {storefront?.feedback_greeting || `Connect with ${username}!`}
           </span>
         )}
         <button
@@ -675,8 +748,9 @@ export default function StorefrontPage() {
             {messageOpen ? <X className="h-5 w-5" /> : <MessageSquareText className="h-5 w-5" />}
         </button>
       </div>
+      )}
 
-      {messageOpen && (
+      {storefront?.feedback_enabled !== false && messageOpen && (
         <div className="fixed inset-0 z-50 bg-transparent px-4 py-4" onClick={closeMessageComposer}>
           <div
             onClick={(e) => e.stopPropagation()}
@@ -684,8 +758,8 @@ export default function StorefrontPage() {
           >
             <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
               <div>
-                <p className="text-base font-semibold text-slate-900">Message the creator</p>
-                <p className="mt-1 text-sm text-slate-500">Leave feedback, suggestions, offers, or bugs.</p>
+                <p className="text-base font-semibold text-slate-900">{storefront?.feedback_title || 'Message the creator'}</p>
+                <p className="mt-1 text-sm text-slate-500">{storefront?.feedback_subtitle || 'Leave feedback, suggestions, offers, or bugs.'}</p>
               </div>
               <button
                 type="button"
@@ -740,7 +814,7 @@ export default function StorefrontPage() {
                   <div>
                     <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Type</span>
                     <div className="flex flex-wrap gap-1.5">
-                      {MESSAGE_TYPES.map((t) => (
+                      {MESSAGE_TYPES.filter((t) => !storefront?.feedback_types?.length || storefront.feedback_types.includes(t.value)).map((t) => (
                         <button
                           key={t.value}
                           type="button"
