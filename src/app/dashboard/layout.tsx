@@ -142,12 +142,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="flex flex-col items-center space-y-2 p-3">
-          <div
-            title={user.name}
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF1FF] text-sm font-black text-[#394BE8]"
-          >
-            {user.name[0].toUpperCase()}
-          </div>
+          {user.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt={user.name}
+              title={user.name}
+              className="h-11 w-11 rounded-xl object-cover"
+            />
+          ) : (
+            <div
+              title={user.name}
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF1FF] text-sm font-black text-[#394BE8]"
+            >
+              {user.name[0].toUpperCase()}
+            </div>
+          )}
         </div>
       </aside>
 

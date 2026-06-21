@@ -8,6 +8,7 @@ interface User {
   name: string
   email: string
   username: string
+  avatar_url: string | null
   storefront?: {
     id: string
     username: string
