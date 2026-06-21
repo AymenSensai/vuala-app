@@ -2,10 +2,12 @@
 
 import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useAuth } from '@/lib/auth'
 
 function OAuthCallbackHandler() {
   const router = useRouter()
   const params = useSearchParams()
+  const { refresh } = useAuth()
 
   useEffect(() => {
     const token = params.get('token')
@@ -17,8 +19,10 @@ function OAuthCallbackHandler() {
     }
 
     localStorage.setItem('token', token)
-    router.replace('/dashboard')
-  }, [params, router])
+    refresh()
+      .then(() => router.replace('/dashboard'))
+      .catch(() => router.replace('/login?error=oauth_failed'))
+  }, [params, router, refresh])
 
   return null
 }
