@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   BarChart3,
   Bell,
+  CreditCard,
   Link2,
   LockKeyhole,
   LogOut,
@@ -75,6 +76,10 @@ export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+
+  const [upgrading, setUpgrading] = useState<'pro' | 'studio' | null>(null)
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [billingError, setBillingError] = useState('')
 
   const origin = typeof window === 'undefined' ? '' : window.location.origin
   const normalizedUsername = username.trim().toLowerCase()
@@ -145,6 +150,37 @@ export default function SettingsPage() {
       setSavingPrefs(false)
     }
   }
+
+  const upgrade = async (plan: 'pro' | 'studio') => {
+    setUpgrading(plan)
+    setBillingError('')
+    try {
+      const res = await api.post('/billing/checkout', { plan, cycle: 'monthly' })
+      window.location.href = res.data.url
+    } catch {
+      setBillingError('Could not start checkout. Please try again.')
+      setUpgrading(null)
+    }
+  }
+
+  const openBillingPortal = async () => {
+    setPortalLoading(true)
+    setBillingError('')
+    try {
+      const res = await api.post('/billing/portal')
+      window.location.href = res.data.url
+    } catch {
+      setBillingError('Could not open the billing portal. Please try again.')
+      setPortalLoading(false)
+    }
+  }
+
+  const planLabels: Record<string, string> = { free: 'Free', pro: 'Pro', studio: 'Studio' }
+  const planLabel = planLabels[user?.plan ?? 'free'] ?? 'Free'
+  const statusLabels: Record<string, string> = {
+    trialing: 'Trial', active: 'Active', past_due: 'Payment due', canceled: 'Canceled',
+  }
+  const statusLabel = user?.plan_status ? statusLabels[user.plan_status] ?? user.plan_status : null
 
   const deleteAccount = async () => {
     if (deleteConfirm !== user?.email) return
@@ -250,6 +286,66 @@ export default function SettingsPage() {
                 </button>
               </div>
             </form>
+
+            <section className={`${CARD} overflow-hidden`}>
+              <div className="flex items-start gap-3 border-b border-[#eef1f5] px-5 py-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#eef0ff] text-[#394BE8]">
+                  <CreditCard className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-[#0F172A]">Billing</p>
+                  <p className="mt-1 text-[12.5px] text-[#64748B]">Manage your plan and payment details.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 px-5 py-5">
+                {billingError && <div className="rounded-[10px] border border-red-100 bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700">{billingError}</div>}
+
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#e6e8ec] bg-[#fbfcfe] px-4 py-3">
+                  <div>
+                    <p className="text-[13px] font-semibold text-[#15171f]">
+                      {planLabel} plan
+                      {statusLabel && <span className="ml-2 rounded-full bg-[#EEF1FF] px-2 py-0.5 text-[11px] font-semibold text-[#394BE8]">{statusLabel}</span>}
+                    </p>
+                    <p className="mt-0.5 text-[12.5px] text-[#64748B]">
+                      {user?.plan === 'free' ? 'Up to 5 projects, 1 wishlist idea.' : 'Unlimited projects and wishlists.'}
+                    </p>
+                  </div>
+                  {user?.plan !== 'free' && (
+                    <button
+                      type="button"
+                      onClick={openBillingPortal}
+                      disabled={portalLoading}
+                      className="inline-flex h-9 items-center gap-2 rounded-[9px] border border-[#e6e8ec] bg-white px-3 text-[13px] font-semibold text-[#475569] transition-colors hover:bg-[#f7f8fa] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {portalLoading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#475569]/40 border-t-transparent" /> : <CreditCard className="h-4 w-4" />}
+                      Manage billing
+                    </button>
+                  )}
+                </div>
+
+                {user?.plan === 'free' && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => upgrade('pro')}
+                      disabled={upgrading !== null}
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-[9px] bg-[#394BE8] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#2f40d8] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {upgrading === 'pro' ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" /> : 'Start 14-day Pro trial'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => upgrade('studio')}
+                      disabled={upgrading !== null}
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-[9px] border border-[#e2e6ee] bg-white px-4 text-[13px] font-semibold text-[#15171f] transition-colors hover:bg-[#f7f8fa] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {upgrading === 'studio' ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#15171f]/40 border-t-transparent" /> : 'Start Studio trial'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </section>
 
             <form onSubmit={savePassword} className={`${CARD} overflow-hidden`}>
               <div className="flex items-start gap-3 border-b border-[#eef1f5] px-5 py-4">

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
+import api from '@/lib/api'
 
 function GoogleIcon() {
   return (
@@ -38,11 +39,14 @@ const inputStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { register } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') // 'pro' | 'studio' | null
+  const cycle = searchParams.get('cycle') === 'monthly' ? 'monthly' : 'annual'
   const [form, setForm] = useState({
-    name: '', email: '', username: '', password: '', password_confirmation: ''
+    name: '', email: '', username: searchParams.get('username') ?? '', password: '', password_confirmation: ''
   })
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [generalError, setGeneralError] = useState('')
@@ -55,7 +59,6 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await register(form)
-      router.push('/dashboard')
     } catch (err: unknown) {
       const response = (err as { response?: { data?: { errors?: Record<string, string[]>; message?: string } } })?.response
       if (response?.data?.errors) {
@@ -65,9 +68,23 @@ export default function RegisterPage() {
       } else {
         setGeneralError('Could not connect to the server. Make sure the API is running.')
       }
-    } finally {
       setLoading(false)
+      return
     }
+
+    if (plan === 'pro' || plan === 'studio') {
+      try {
+        const res = await api.post('/billing/checkout', { plan, cycle })
+        window.location.href = res.data.url
+        return
+      } catch {
+        // Account was created fine; just send them to the dashboard and let
+        // them upgrade from Settings instead of stranding them here.
+      }
+    }
+
+    router.push('/dashboard')
+    setLoading(false)
   }
 
   return (
@@ -187,5 +204,13 @@ export default function RegisterPage() {
 
     </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { SiteFooter, SiteHeader } from '@/components/SiteChrome'
 
 // ─── SVG icon primitives ──────────────────────────────────────────────────────
@@ -1256,7 +1257,7 @@ function PricingSection() {
               <span style={{ fontFamily: newsreaderStyle, fontSize: '44px', fontWeight: 500, color: '#171a21' }}>$0</span>
               <span style={{ fontSize: '14px', color: '#9aa2b1' }}>/ forever</span>
             </div>
-            <a href="#cta" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', border: '1px solid #e4e7ec', color: '#1b1f27', fontWeight: 600, fontSize: '14px', padding: '11px', borderRadius: '10px', marginBottom: '24px' }}>
+            <a href="/register" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', border: '1px solid #e4e7ec', color: '#1b1f27', fontWeight: 600, fontSize: '14px', padding: '11px', borderRadius: '10px', marginBottom: '24px' }}>
               Create your page
             </a>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1278,7 +1279,7 @@ function PricingSection() {
               <span style={{ fontSize: '14px', color: '#9aa2b1' }}>/ mo</span>
             </div>
             <div style={{ fontSize: '12.5px', color: '#9aa2b1', marginBottom: '18px' }}>{annual ? 'billed annually' : 'billed monthly'}</div>
-            <a href="#cta" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: '#394be8', color: '#fff', fontWeight: 600, fontSize: '14px', padding: '12px', borderRadius: '10px', marginBottom: '24px', boxShadow: '0 1px 2px rgba(57,75,232,.25)' }}>
+            <a href={`/register?plan=pro&cycle=${billing}`} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', background: '#394be8', color: '#fff', fontWeight: 600, fontSize: '14px', padding: '12px', borderRadius: '10px', marginBottom: '24px', boxShadow: '0 1px 2px rgba(57,75,232,.25)' }}>
               Start 14-day trial
             </a>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1299,7 +1300,7 @@ function PricingSection() {
               <span style={{ fontSize: '14px', color: '#9aa2b1' }}>/ mo</span>
             </div>
             <div style={{ fontSize: '12.5px', color: '#9aa2b1', marginBottom: '18px' }}>{annual ? 'billed annually' : 'billed monthly'}</div>
-            <a href="#cta" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', border: '1px solid #e4e7ec', color: '#1b1f27', fontWeight: 600, fontSize: '14px', padding: '11px', borderRadius: '10px', marginBottom: '24px' }}>
+            <a href={`/register?plan=studio&cycle=${billing}`} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', border: '1px solid #e4e7ec', color: '#1b1f27', fontWeight: 600, fontSize: '14px', padding: '11px', borderRadius: '10px', marginBottom: '24px' }}>
               Start free trial
             </a>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1367,6 +1368,15 @@ function FaqSection() {
 // ─── Final CTA ────────────────────────────────────────────────────────────────
 
 function FinalCta() {
+  const router = useRouter()
+  const [username, setUsername] = useState('')
+
+  const claimIt = (e: React.FormEvent) => {
+    e.preventDefault()
+    const params = username.trim() ? `?username=${encodeURIComponent(username.trim())}` : ''
+    router.push(`/register${params}`)
+  }
+
   return (
     <section id="cta" style={{ background: '#fbfbfc' }}>
       <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '30px 28px 100px' }}>
@@ -1377,13 +1387,13 @@ function FinalCta() {
           <p style={{ fontSize: '18px', lineHeight: 1.6, color: '#5c6573', margin: '0 auto 32px', maxWidth: '500px' }}>
             Showcase what you&apos;ve built, collect wishlists for what&apos;s next, and share one link. Free to start.
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#fff', border: '1px solid #e0e5fb', borderRadius: '13px', padding: '6px 6px 6px 16px', maxWidth: '430px', margin: '0 auto', boxShadow: '0 1px 2px rgba(20,24,40,.04),0 14px 36px -18px rgba(57,75,232,.3)' }}>
+          <form onSubmit={claimIt} style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#fff', border: '1px solid #e0e5fb', borderRadius: '13px', padding: '6px 6px 6px 16px', maxWidth: '430px', margin: '0 auto', boxShadow: '0 1px 2px rgba(20,24,40,.04),0 14px 36px -18px rgba(57,75,232,.3)' }}>
             <span style={{ fontSize: '15px', color: '#9aa2b1', whiteSpace: 'nowrap' }}>vuala.dev/</span>
-            <input type="text" placeholder="yourname" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '15px', color: '#1b1f27', padding: '9px 0', fontWeight: 500 }} />
-            <button style={{ border: 'none', background: '#394be8', color: '#fff', fontFamily: 'inherit', fontWeight: 600, fontSize: '14px', padding: '11px 18px', borderRadius: '9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="yourname" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '15px', color: '#1b1f27', padding: '9px 0', fontWeight: 500 }} />
+            <button type="submit" style={{ border: 'none', background: '#394be8', color: '#fff', fontFamily: 'inherit', fontWeight: 600, fontSize: '14px', padding: '11px 18px', borderRadius: '9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               Claim it
             </button>
-          </div>
+          </form>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '22px', marginTop: '22px', fontSize: '13px', color: '#8a93a3', flexWrap: 'wrap' }}>
             {['Free forever plan', 'No credit card', 'Export anytime'].map(item => (
               <span key={item} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
