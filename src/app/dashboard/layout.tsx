@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
+import api from '@/lib/api'
 import { Copy, Check } from 'lucide-react'
 
 function DashboardIcon({ className }: { className?: string }) {
@@ -69,7 +70,7 @@ function RoadmapIcon({ className }: { className?: string }) {
 function PageDesignIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" className={className}>
-      <path fill="currentColor" fillRule="evenodd" clipRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75c.616 0 1.116-.5 1.116-1.116 0-.286-.108-.55-.286-.755a1.115 1.115 0 0 1-.27-.73c0-.616.5-1.107 1.116-1.107h1.3c2.764 0 5.004-2.24 5.004-5.004 0-4.832-4.365-8.788-9.78-8.788Zm-5.4 7.65a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Zm3.6-3.6a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Zm5.4 0a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Zm3 4.5a1.35 1.35 0 1 1 0-2.7 1.35 1.35 0 0 1 0 2.7Z" />
+      <path fill="currentColor" fillRule="evenodd" clipRule="evenodd" d="M10.8468 21.9342C5.86713 21.3624 2 17.1328 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.1565 18.7173 16.7325 15.9135 16.3703C14.2964 16.1614 12.8386 15.9731 12.2619 16.888C11.8674 17.5136 12.2938 18.2938 12.8168 18.8168C13.4703 19.4703 13.4703 20.5297 12.8168 21.1832C12.2938 21.7062 11.5816 22.0186 10.8468 21.9342ZM11.085 6.99976C11.085 7.82818 10.4134 8.49976 9.585 8.49976C8.75658 8.49976 8.085 7.82818 8.085 6.99976C8.085 6.17133 8.75658 5.49976 9.585 5.49976C10.4134 5.49976 11.085 6.17133 11.085 6.99976ZM6.5 13C7.32843 13 8 12.3284 8 11.5C8 10.6716 7.32843 9.99998 6.5 9.99998C5.67157 9.99998 5 10.6716 5 11.5C5 12.3284 5.67157 13 6.5 13ZM17.5 13C18.3284 13 19 12.3284 19 11.5C19 10.6716 18.3284 9.99998 17.5 9.99998C16.6716 9.99998 16 10.6716 16 11.5C16 12.3284 16.6716 13 17.5 13ZM14.5 8.49998C15.3284 8.49998 16 7.82841 16 6.99998C16 6.17156 15.3284 5.49998 14.5 5.49998C13.6716 5.49998 13 6.17156 13 6.99998C13 7.82841 13.6716 8.49998 14.5 8.49998Z" />
     </svg>
   )
 }
@@ -86,10 +87,30 @@ const navItems = [
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, loading, refresh } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const [copied, setCopied] = useState(false)
+
+  // After returning from Stripe Checkout, provision the plan immediately
+  // instead of waiting on the (async, often-delayed) webhook.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('billing') !== 'success') return
+
+    const sessionId = params.get('session_id')
+    const finish = () => router.replace(pathname)
+
+    if (!sessionId) {
+      refresh().catch(() => {}).finally(finish)
+      return
+    }
+
+    api.post('/billing/verify', { session_id: sessionId })
+      .then(() => refresh())
+      .catch(() => {})
+      .finally(finish)
+  }, [pathname, refresh, router])
 
   const copyStoreLink = () => {
     if (!user?.storefront) return
@@ -99,10 +120,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   useEffect(() => {
-    if (!loading && !user) router.push('/login')
+    if (loading) return
+    if (!user) {
+      router.push('/login')
+    } else if (!user.onboarding_completed_at) {
+      router.push('/onboarding')
+    }
   }, [user, loading, router])
 
-  if (loading || !user) {
+  if (loading || !user || !user.onboarding_completed_at) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
@@ -175,7 +201,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 target="_blank"
                 className="text-sm text-[#394BE8] hover:text-[#2D3BC2] font-medium transition-colors"
               >
-                vuala.dev/{user.storefront.username}
+                vuala.bio/{user.storefront.username}
               </Link>
               <button
                 onClick={copyStoreLink}

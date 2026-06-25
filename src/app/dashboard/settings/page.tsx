@@ -8,7 +8,9 @@ import {
   AlertTriangle,
   BarChart3,
   Bell,
+  Check,
   CreditCard,
+  Crown,
   Link2,
   LockKeyhole,
   LogOut,
@@ -17,7 +19,15 @@ import {
   Save,
   ShieldCheck,
   Star,
+  XCircle,
 } from 'lucide-react'
+
+const newsreaderStyle = "var(--font-newsreader), Georgia, serif"
+
+const PLAN_FEATURES = {
+  free: ['Your vuala.bio page', 'Up to 3 projects', '1 roadmap board', 'Unlimited wishlists & email capture'],
+  pro: ['Everything in Free, plus', 'Unlimited projects', 'Unlimited roadmap boards', 'Export wishlists to CSV', 'Remove the Vuala badge'],
+}
 
 interface NotificationPrefs {
   message_notifications: boolean
@@ -80,6 +90,7 @@ export default function SettingsPage() {
   const [upgrading, setUpgrading] = useState<'pro' | 'studio' | null>(null)
   const [portalLoading, setPortalLoading] = useState(false)
   const [billingError, setBillingError] = useState('')
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual')
 
   const origin = typeof window === 'undefined' ? '' : window.location.origin
   const normalizedUsername = username.trim().toLowerCase()
@@ -155,7 +166,7 @@ export default function SettingsPage() {
     setUpgrading(plan)
     setBillingError('')
     try {
-      const res = await api.post('/billing/checkout', { plan, cycle: 'monthly' })
+      const res = await api.post('/billing/checkout', { plan, cycle: billingCycle, context: 'settings' })
       window.location.href = res.data.url
     } catch {
       setBillingError('Could not start checkout. Please try again.')
@@ -181,6 +192,11 @@ export default function SettingsPage() {
     trialing: 'Trial', active: 'Active', past_due: 'Payment due', canceled: 'Canceled',
   }
   const statusLabel = user?.plan_status ? statusLabels[user.plan_status] ?? user.plan_status : null
+
+  const handleSignOut = async () => {
+    await logout()
+    router.push('/')
+  }
 
   const deleteAccount = async () => {
     if (deleteConfirm !== user?.email) return
@@ -301,48 +317,90 @@ export default function SettingsPage() {
               <div className="space-y-4 px-5 py-5">
                 {billingError && <div className="rounded-[10px] border border-red-100 bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700">{billingError}</div>}
 
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#e6e8ec] bg-[#fbfcfe] px-4 py-3">
-                  <div>
-                    <p className="text-[13px] font-semibold text-[#15171f]">
-                      {planLabel} plan
-                      {statusLabel && <span className="ml-2 rounded-full bg-[#EEF1FF] px-2 py-0.5 text-[11px] font-semibold text-[#394BE8]">{statusLabel}</span>}
-                    </p>
-                    <p className="mt-0.5 text-[12.5px] text-[#64748B]">
-                      {user?.plan === 'free' ? 'Up to 5 projects, 1 wishlist idea.' : 'Unlimited projects and wishlists.'}
-                    </p>
-                  </div>
-                  {user?.plan !== 'free' && (
+                {user?.plan !== 'free' ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#e6e8ec] bg-[#fbfcfe] px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#394BE8] px-2.5 py-1 text-[11.5px] font-bold text-white">
+                        <Crown className="h-3 w-3" /> {planLabel}
+                      </span>
+                      {statusLabel && <span className="rounded-full bg-[#EEF1FF] px-2 py-0.5 text-[11px] font-semibold text-[#394BE8]">{statusLabel}</span>}
+                      <span className="text-[12.5px] text-[#64748B]">Unlimited projects and roadmap boards.</span>
+                    </div>
                     <button
                       type="button"
                       onClick={openBillingPortal}
                       disabled={portalLoading}
-                      className="inline-flex h-9 items-center gap-2 rounded-[9px] border border-[#e6e8ec] bg-white px-3 text-[13px] font-semibold text-[#475569] transition-colors hover:bg-[#f7f8fa] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex h-9 items-center gap-2 rounded-[9px] border border-[#e6e8ec] bg-white px-3 text-[13px] font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {portalLoading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#475569]/40 border-t-transparent" /> : <CreditCard className="h-4 w-4" />}
-                      Manage billing
-                    </button>
-                  )}
-                </div>
-
-                {user?.plan === 'free' && (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => upgrade('pro')}
-                      disabled={upgrading !== null}
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-[9px] bg-[#394BE8] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#2f40d8] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {upgrading === 'pro' ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" /> : 'Start 14-day Pro trial'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => upgrade('studio')}
-                      disabled={upgrading !== null}
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-[9px] border border-[#e2e6ee] bg-white px-4 text-[13px] font-semibold text-[#15171f] transition-colors hover:bg-[#f7f8fa] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {upgrading === 'studio' ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#15171f]/40 border-t-transparent" /> : 'Start Studio trial'}
+                      {portalLoading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-600/40 border-t-transparent" /> : <XCircle className="h-4 w-4" />}
+                      Cancel subscription
                     </button>
                   </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center">
+                      <div className="inline-flex gap-[3px] rounded-[10px] border border-[#e4e7ec] bg-white p-1">
+                        <button
+                          type="button"
+                          onClick={() => setBillingCycle('monthly')}
+                          className="rounded-[7px] px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors"
+                          style={{ background: billingCycle === 'monthly' ? '#394BE8' : 'transparent', color: billingCycle === 'monthly' ? '#fff' : '#5c6573' }}
+                        >
+                          Monthly
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBillingCycle('annual')}
+                          className="rounded-[7px] px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors"
+                          style={{ background: billingCycle === 'annual' ? '#394BE8' : 'transparent', color: billingCycle === 'annual' ? '#fff' : '#5c6573' }}
+                        >
+                          Annual
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-[16px] border border-[#ebedf1] p-5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[14px] font-bold text-[#171a21]">Free</span>
+                          <span className="rounded-full bg-[#f1f3f7] px-2 py-0.5 text-[10.5px] font-semibold text-[#64748B]">Current plan</span>
+                        </div>
+                        <div style={{ fontFamily: newsreaderStyle, fontSize: '28px', fontWeight: 500, color: '#171a21', marginTop: '8px' }}>$0</div>
+                        <div className="mt-3 flex flex-col gap-1.5">
+                          {PLAN_FEATURES.free.map((f) => (
+                            <div key={f} className="flex items-start gap-1.5 text-[11.5px] leading-snug text-[#5c6573]">
+                              <Check className="mt-[2px] h-3 w-3 flex-shrink-0 text-[#9aa2b1]" />
+                              {f}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[16px] p-5" style={{ border: '1.5px solid #394be8', boxShadow: '0 1px 2px rgba(20,24,40,.04),0 18px 36px -22px rgba(57,75,232,.35)' }}>
+                        <span className="text-[14px] font-bold text-[#2f3bb5]">Pro</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px', marginTop: '8px' }}>
+                          <span style={{ fontFamily: newsreaderStyle, fontSize: '28px', fontWeight: 500, color: '#171a21' }}>${billingCycle === 'annual' ? '4' : '6'}</span>
+                          <span className="text-[12px] text-[#9aa2b1]">/mo</span>
+                        </div>
+                        <div className="mt-3 mb-4 flex flex-col gap-1.5">
+                          {PLAN_FEATURES.pro.map((f) => (
+                            <div key={f} className="flex items-start gap-1.5 text-[11.5px] leading-snug text-[#5c6573]">
+                              <Check className="mt-[2px] h-3 w-3 flex-shrink-0 text-[#394BE8]" />
+                              {f}
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => upgrade('pro')}
+                          disabled={upgrading !== null}
+                          className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[9px] bg-[#394BE8] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#2f40d8] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {upgrading === 'pro' ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" /> : 'Upgrade to Pro'}
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </section>
@@ -471,7 +529,7 @@ export default function SettingsPage() {
               </div>
               <button
                 type="button"
-                onClick={logout}
+                onClick={handleSignOut}
                 className="inline-flex h-9 items-center gap-2 rounded-[9px] border border-[#e6e8ec] bg-white px-3 text-[13px] font-semibold text-[#475569] transition-colors hover:bg-[#f7f8fa]"
               >
                 <LogOut className="h-4 w-4" />

@@ -4,7 +4,6 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
-import api from '@/lib/api'
 
 function GoogleIcon() {
   return (
@@ -72,18 +71,7 @@ function RegisterForm() {
       return
     }
 
-    if (plan === 'pro' || plan === 'studio') {
-      try {
-        const res = await api.post('/billing/checkout', { plan, cycle })
-        window.location.href = res.data.url
-        return
-      } catch {
-        // Account was created fine; just send them to the dashboard and let
-        // them upgrade from Settings instead of stranding them here.
-      }
-    }
-
-    router.push('/dashboard')
+    router.push(plan === 'pro' ? `/onboarding?plan=pro&cycle=${cycle}` : '/onboarding')
     setLoading(false)
   }
 
@@ -158,7 +146,7 @@ function RegisterForm() {
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #ebedf1', borderRadius: '9px', background: '#f7f8fa', overflow: 'hidden' }}>
-              <span style={{ fontSize: '13.5px', color: '#aab2c0', padding: '10px 4px 10px 14px', whiteSpace: 'nowrap' }}>vuala.dev/</span>
+              <span style={{ fontSize: '13.5px', color: '#aab2c0', padding: '10px 4px 10px 14px', whiteSpace: 'nowrap' }}>vuala.bio/</span>
               <input type="text" required placeholder="yourhandle" value={form.username}
                 onChange={e => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') })}
                 style={{ ...inputStyle, border: 'none', borderRadius: 0, background: 'transparent', padding: '10px 14px 10px 0' }} />

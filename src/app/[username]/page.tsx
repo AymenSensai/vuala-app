@@ -5,9 +5,10 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import api, { getVisitorId } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
-import { ExternalLink, MessageSquareText, Rocket, Send, Share2, Video, X } from 'lucide-react'
+import { ArrowBigUpDash, ExternalLink, Rocket, Send, Share2, Video, X } from 'lucide-react'
 import { FaInstagram, FaTiktok, FaYoutube, FaLinkedin, FaGithub, FaProductHunt, FaDiscord, FaDribbble, FaApple, FaGooglePlay, FaChrome, FaFirefox } from 'react-icons/fa'
 import { FaXTwitter } from 'react-icons/fa6'
+import { FeedbackBubbleIcon, feedbackBubbleShapeRadius, type FeedbackBubbleIconKey, type FeedbackBubbleShapeKey } from '@/lib/feedbackBubbleIcons'
 
 interface StorefrontData {
   display_name: string
@@ -16,6 +17,8 @@ interface StorefrontData {
   social_links: { platform: string; url: string }[]
   theme_config: Partial<PageThemeConfig> | null
   feedback_enabled: boolean
+  feedback_bubble_icon: FeedbackBubbleIconKey | null
+  feedback_bubble_shape: FeedbackBubbleShapeKey | null
   feedback_greeting: string | null
   feedback_title: string | null
   feedback_subtitle: string | null
@@ -41,6 +44,8 @@ type PageThemeConfig = {
   gradient_angle: number
   section_order: PageSection[]
   section_visibility: { roadmap: boolean; social_links: boolean }
+  layout_mode: 'stacked' | 'split'
+  profile_position: 'start' | 'end'
 }
 
 interface Product {
@@ -140,6 +145,8 @@ const DEFAULT_PAGE_THEME: PageThemeConfig = {
   gradient_angle: 135,
   section_order: ['products', 'roadmap'],
   section_visibility: { roadmap: true, social_links: true },
+  layout_mode: 'stacked',
+  profile_position: 'start',
 }
 
 const normalizePageTheme = (theme?: Partial<PageThemeConfig> | null): PageThemeConfig => ({
@@ -186,8 +193,9 @@ export default function StorefrontPage() {
   const [storefront, setStorefront] = useState<StorefrontData | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [roadmaps, setRoadmaps] = useState<RoadmapBoard[]>([])
+  const [brandingHidden, setBrandingHidden] = useState(false)
   const [wishlistForms, setWishlistForms] = useState<Record<string, string>>({})
-  const [wishlistSubmitted, setWishlistSubmitted] = useState<Record<string, boolean>>({})
+  const [wishlistSubmitted, setWishlistSubmitted] = useState<Record<string, 'joined' | 'already'>>({})
   const [wishlistLoading, setWishlistLoading] = useState<string | null>(null)
   const [wishlistMenuProductId, setWishlistMenuProductId] = useState<string | null>(null)
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
@@ -208,6 +216,8 @@ export default function StorefrontPage() {
   // every time someone opens their own page editor.
   const isEmbeddedPreview = typeof window !== 'undefined' && window.self !== window.top
   const [previewThemeOverride, setPreviewThemeOverride] = useState<Partial<PageThemeConfig> | null>(null)
+  const [previewFeedbackOverride, setPreviewFeedbackOverride] = useState<{ enabled: boolean; icon: FeedbackBubbleIconKey | null; shape: FeedbackBubbleShapeKey | null } | null>(null)
+  const [previewBrandingHiddenOverride, setPreviewBrandingHiddenOverride] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (!isEmbeddedPreview) return
@@ -216,6 +226,8 @@ export default function StorefrontPage() {
       if (event.origin !== window.location.origin) return
       if (event.data?.type !== 'vuala-theme-preview') return
       setPreviewThemeOverride(event.data.theme ?? null)
+      setPreviewFeedbackOverride({ enabled: event.data.feedbackEnabled ?? true, icon: event.data.feedbackBubbleIcon ?? null, shape: event.data.feedbackBubbleShape ?? null })
+      setPreviewBrandingHiddenOverride(event.data.hideBranding ?? null)
     }
 
     window.addEventListener('message', onMessage)
@@ -240,6 +252,7 @@ export default function StorefrontPage() {
         setStorefront(r.data.storefront)
         setProducts(r.data.products)
         setRoadmaps(r.data.roadmaps ?? [])
+        setBrandingHidden(r.data.branding_hidden ?? false)
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
@@ -300,15 +313,18 @@ export default function StorefrontPage() {
 
     setWishlistLoading(productId)
     try {
-      await api.post(`/storefront/${username}/leads`, { email, product_id: productId })
-      setWishlistSubmitted((current) => ({ ...current, [productId]: true }))
+      const res = await api.post(`/storefront/${username}/leads`, { email, product_id: productId })
+      const alreadyJoined = Boolean(res.data?.already_joined)
+      setWishlistSubmitted((current) => ({ ...current, [productId]: alreadyJoined ? 'already' : 'joined' }))
       setWishlistForms((current) => ({ ...current, [productId]: '' }))
       setWishlistMenuProductId(null)
-      setProducts((current) => current.map((product) => (
-        product.id === productId
-          ? { ...product, wishlist_count: product.wishlist_count + 1 }
-          : product
-      )))
+      if (!alreadyJoined) {
+        setProducts((current) => current.map((product) => (
+          product.id === productId
+            ? { ...product, wishlist_count: product.wishlist_count + 1 }
+            : product
+        )))
+      }
     } catch {
       alert('Failed to join the wishlist. Please try again.')
     } finally {
@@ -367,8 +383,16 @@ export default function StorefrontPage() {
     ? products.find((product) => product.id === wishlistMenuProductId) ?? null
     : null
   const pageTheme = normalizePageTheme(previewThemeOverride ?? storefront?.theme_config)
-  const pageSpacing = pageTheme.layout === 'spacious' ? 'space-y-10' : 'space-y-8'
+  const pageGap = pageTheme.layout === 'spacious' ? 'gap-10' : 'gap-8'
   const cardBorderColor = pageTheme.card_style === 'glass' ? 'rgba(255,255,255,0.34)' : 'rgba(15,23,42,0.10)'
+  const isSplitLayout = pageTheme.layout_mode === 'split'
+  const profileOrder = pageTheme.profile_position === 'end' ? 10 : -10
+  const hasRoadmap = pageTheme.section_visibility.roadmap && roadmaps.length > 0
+  const splitAlignClass = hasRoadmap ? 'md:items-start' : 'md:items-center'
+  const showBranding = previewBrandingHiddenOverride !== null ? !previewBrandingHiddenOverride : !brandingHidden
+  const feedbackEnabled = previewFeedbackOverride ? previewFeedbackOverride.enabled : storefront?.feedback_enabled !== false
+  const feedbackBubbleIcon = previewFeedbackOverride ? previewFeedbackOverride.icon : storefront?.feedback_bubble_icon
+  const feedbackBubbleShape = previewFeedbackOverride ? previewFeedbackOverride.shape : storefront?.feedback_bubble_shape
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -380,14 +404,14 @@ export default function StorefrontPage() {
     <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
       <p className="text-4xl mb-3">🤔</p>
       <h1 className="text-xl font-semibold text-slate-900">Store not found</h1>
-      <p className="text-slate-500 mt-1 mb-6">vuala.dev/{username} doesn&apos;t exist</p>
+      <p className="text-slate-500 mt-1 mb-6">vuala.bio/{username} doesn&apos;t exist</p>
       <Link href="/" className="text-indigo-600 font-medium hover:underline">← Back to home</Link>
     </div>
   )
 
   return (
     <div
-      className="storefront-page min-h-screen"
+      className={`storefront-page min-h-screen ${isSplitLayout && !hasRoadmap ? 'flex flex-col justify-center' : ''}`}
       style={{
         '--sf-bg': backgroundFor(pageTheme),
         '--sf-card': pageTheme.card_color,
@@ -437,11 +461,15 @@ export default function StorefrontPage() {
           color: var(--sf-accent);
         }
       `}</style>
-      <div className={`flex max-w-2xl flex-col mx-auto px-4 py-8 ${pageSpacing}`}>
+      <div className={`w-full mx-auto px-4 py-8 ${isSplitLayout ? 'max-w-3xl' : 'max-w-xl'}`}>
+      <div className={`flex flex-col ${pageGap} ${isSplitLayout ? `md:flex-row ${splitAlignClass}` : ''}`}>
 
         {/* Profile header */}
         {storefront && (
-          <div className="flex flex-col items-center text-center gap-3 pt-4" style={{ order: -10 }}>
+          <div
+            className={`flex flex-col items-center text-center gap-3 pt-4 ${isSplitLayout ? 'md:w-64 md:flex-shrink-0 md:sticky md:top-8' : ''}`}
+            style={{ order: profileOrder }}
+          >
             {storefront.avatar_url && (
               <img src={storefront.avatar_url} alt={storefront.display_name} className="h-28 w-28 rounded-full object-cover" />
             )}
@@ -466,6 +494,9 @@ export default function StorefrontPage() {
             )}
           </div>
         )}
+
+        {/* Content column: products + roadmap, kept together so the profile sidebar forms exactly one other flex item in split layout */}
+        <div className={`flex min-w-0 flex-col ${pageGap} ${isSplitLayout ? 'md:flex-1' : ''}`} style={{ order: 0 }}>
 
         {/* Products */}
         {products.length > 0 && (
@@ -510,16 +541,16 @@ export default function StorefrontPage() {
                   return (
                     <div
                       key={product.id}
-                      className="sf-card border overflow-hidden flex hover:shadow-sm transition-shadow"
+                      className="sf-card border p-4 flex items-center gap-4 hover:shadow-sm transition-shadow"
                     >
-                      <div className="w-24 flex-shrink-0 self-stretch overflow-hidden bg-slate-50 relative flex items-center justify-center">
+                      <div className="h-14 w-14 flex-shrink-0 rounded-xl border border-slate-100 bg-slate-50 overflow-hidden flex items-center justify-center">
                         {product.cover_image_url
-                          ? <img src={product.cover_image_url} alt={product.title} className="absolute inset-0 w-full h-full object-cover" />
+                          ? <img src={product.cover_image_url} alt={product.title} className="h-full w-full object-cover" />
                           : <Rocket className="w-6 h-6 text-slate-200" />
                         }
                       </div>
-                      <div className="flex-1 p-4 flex items-center justify-between">
-                        <div className="min-w-0 flex-1 pr-4">
+                      <div className="min-w-0 flex-1 flex items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1">
                           <p className="font-semibold text-slate-900 truncate">{product.title}</p>
                           {product.description && (
                             <p className="text-sm text-slate-500 truncate">{product.description}</p>
@@ -527,7 +558,6 @@ export default function StorefrontPage() {
                           {!product.file_url && !product.app_store_url && !product.play_store_url && (
                             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                               {product.launch_date && <span>Launches {formatLaunchDate(product.launch_date)}</span>}
-                              {product.wishlist_count > 0 && <span>{product.wishlist_count} joined</span>}
                             </div>
                           )}
                         </div>
@@ -589,11 +619,15 @@ export default function StorefrontPage() {
                                 )}
                                 {product.wishlist_enabled ? (
                                   wishlistSubmitted[product.id] ? (
-                                    <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">You are on the list</span>
+                                    <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                                      {wishlistSubmitted[product.id] === 'already' ? 'Already on the wishlist' : 'You are on the list'}
+                                    </span>
                                   ) : (
                                     <button type="button" onClick={() => setWishlistMenuProductId(product.id)}
-                                      className="sf-action h-8 px-3 text-xs font-medium transition-colors">
+                                      className="sf-action flex h-8 items-center gap-1.5 px-3 text-xs font-medium transition-colors">
                                       Wishlist
+                                      {product.wishlist_count > 0 && <span>{product.wishlist_count}</span>}
+                                      <ArrowBigUpDash className="w-3.5 h-3.5" />
                                     </button>
                                   )
                                 ) : (
@@ -616,16 +650,16 @@ export default function StorefrontPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackLinkClick(product.id)}
-                      className="sf-card border overflow-hidden flex hover:shadow-sm transition-all"
+                      className="sf-card border p-4 flex items-center gap-4 hover:shadow-sm transition-all"
                     >
-                      <div className="w-24 flex-shrink-0 self-stretch overflow-hidden bg-slate-50 relative flex items-center justify-center">
+                      <div className="h-14 w-14 flex-shrink-0 rounded-xl border border-slate-100 bg-slate-50 overflow-hidden flex items-center justify-center">
                         {product.cover_image_url
-                          ? <img src={product.cover_image_url} alt={product.title} className="absolute inset-0 w-full h-full object-cover" />
+                          ? <img src={product.cover_image_url} alt={product.title} className="h-full w-full object-cover" />
                           : <Video className="w-6 h-6 text-slate-200" />
                         }
                       </div>
-                      <div className="flex-1 p-4 flex items-center justify-between">
-                        <div className="min-w-0 flex-1 pr-4">
+                      <div className="min-w-0 flex-1 flex items-center justify-between gap-4">
+                        <div className="min-w-0 flex-1">
                           <p className="font-semibold text-slate-900 truncate">{product.title}</p>
                           {product.description && (
                             <p className="text-sm text-slate-500 truncate">{product.description}</p>
@@ -642,16 +676,16 @@ export default function StorefrontPage() {
                 return (
                   <div
                     key={product.id}
-                    className="sf-card border overflow-hidden flex hover:shadow-sm transition-shadow"
+                    className="sf-card border p-4 flex items-center gap-4 hover:shadow-sm transition-shadow"
                   >
-                    <div className="w-24 flex-shrink-0 self-stretch overflow-hidden bg-slate-50 relative flex items-center justify-center">
+                    <div className="h-14 w-14 flex-shrink-0 rounded-xl border border-slate-100 bg-slate-50 overflow-hidden flex items-center justify-center">
                       {product.cover_image_url
-                        ? <img src={product.cover_image_url} alt={product.title} className="absolute inset-0 w-full h-full object-cover" />
+                        ? <img src={product.cover_image_url} alt={product.title} className="h-full w-full object-cover" />
                         : <Icon className="w-6 h-6 text-slate-200" />
                       }
                     </div>
-                    <div className="flex-1 p-4 flex items-center justify-between">
-                      <div className="min-w-0 flex-1 pr-4">
+                    <div className="min-w-0 flex-1 flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
                         <p className="font-semibold text-slate-900 truncate">{product.title}</p>
                         {product.description && (
                           <p className="text-sm text-slate-500 line-clamp-2">{product.description}</p>
@@ -723,16 +757,21 @@ export default function StorefrontPage() {
             </div>
           </section>
         )}
-
-        {/* Powered by */}
-        <div className="text-center" style={{ order: 10 }}>
-          <Link href="/" className="text-xs text-slate-300 hover:text-slate-400 transition-colors">
-            Powered by Vuala
-          </Link>
         </div>
+
       </div>
 
-      {storefront?.feedback_enabled !== false && (
+        {/* Powered by */}
+        {showBranding && (
+          <div className="mt-8 text-center">
+            <Link href="/" className="text-xs text-slate-300 hover:text-slate-400 transition-colors">
+              Powered by Vuala
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {feedbackEnabled && (
       <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2">
         {!messageOpen && (
           <span className="pointer-events-none feedback-badge rounded-full border border-slate-200 bg-white px-3 py-1 text-[12px] font-medium text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
@@ -742,15 +781,16 @@ export default function StorefrontPage() {
         <button
           type="button"
           onClick={() => (messageOpen ? closeMessageComposer() : openMessageComposer())}
-          className="sf-action flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_34px_rgba(57,75,232,0.24)] transition-transform hover:scale-[1.03]"
+          className="sf-action flex h-14 w-14 items-center justify-center shadow-[0_14px_34px_rgba(57,75,232,0.24)] transition-transform hover:scale-[1.03]"
+          style={{ borderRadius: feedbackBubbleShapeRadius(feedbackBubbleShape) }}
           aria-label="Open message form"
           >
-            {messageOpen ? <X className="h-5 w-5" /> : <MessageSquareText className="h-5 w-5" />}
+            {messageOpen ? <X className="h-5 w-5" /> : <FeedbackBubbleIcon icon={feedbackBubbleIcon} className="h-5 w-5" />}
         </button>
       </div>
       )}
 
-      {storefront?.feedback_enabled !== false && messageOpen && (
+      {feedbackEnabled && messageOpen && (
         <div className="fixed inset-0 z-50 bg-transparent px-4 py-4" onClick={closeMessageComposer}>
           <div
             onClick={(e) => e.stopPropagation()}

@@ -162,7 +162,7 @@ interface ProductRowProps {
   uploadingId: string | null
   onToggleActive: (product: Product) => void
   onEdit: (product: Product) => void
-  onDelete: (id: string) => void
+  onDelete: (product: Product) => void
   onUploadClick: (id: string) => void
 }
 
@@ -257,7 +257,7 @@ function SortableProductRow({
         <Pencil className="w-4 h-4" />
       </button>
       <button
-        onClick={() => onDelete(product.id)}
+        onClick={() => onDelete(product)}
         title="Remove project"
         aria-label={`Remove ${product.title}`}
         className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
@@ -278,6 +278,8 @@ export default function ProductsPage() {
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('web')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   // Profile
   const [profile, setProfile] = useState<StorefrontProfile | null>(null)
@@ -393,11 +395,17 @@ export default function ProductsPage() {
     setPreviewKey(k => k + 1)
   }
 
-  const deleteProduct = async (id: string) => {
-    if (!confirm('Delete this product?')) return
-    await api.delete(`/products/${id}`)
-    setProducts(products.filter(p => p.id !== id))
-    setPreviewKey(k => k + 1)
+  const confirmDeleteProduct = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await api.delete(`/products/${deleteTarget.id}`)
+      setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
+      setPreviewKey(k => k + 1)
+      setDeleteTarget(null)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -515,7 +523,7 @@ export default function ProductsPage() {
                           uploadingId={uploadingId}
                           onToggleActive={toggleActive}
                           onEdit={setSelectedProduct}
-                          onDelete={deleteProduct}
+                          onDelete={setDeleteTarget}
                           onUploadClick={(id) => { uploadTargetId.current = id; fileInputRef.current?.click() }}
                         />
                       ))}
@@ -820,6 +828,41 @@ export default function ProductsPage() {
                   }}
                   onSuccess={handleEditSuccess}
                 />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <>
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30" onClick={() => !deleting && setDeleteTarget(null)} />
+          <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 mb-4">
+                <Trash2 className="w-5 h-5 text-red-500" />
+              </div>
+              <h2 className="text-base font-semibold text-slate-900">Delete &ldquo;{deleteTarget.title}&rdquo;?</h2>
+              <p className="text-sm text-slate-400 mt-1.5">This will permanently remove this item from your page. This action cannot be undone.</p>
+              <div className="flex items-center justify-end gap-2.5 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                  className="h-9 rounded-xl px-4 text-sm font-medium text-slate-500 transition hover:text-slate-700 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteProduct}
+                  disabled={deleting}
+                  className="inline-flex h-9 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
+                >
+                  {deleting && <span className="h-3.5 w-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />}
+                  {deleting ? 'Deleting…' : 'Delete'}
+                </button>
               </div>
             </div>
           </div>

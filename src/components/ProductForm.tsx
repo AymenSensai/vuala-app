@@ -110,6 +110,7 @@ export default function ProductForm({ initialData, productId, onSuccess }: Props
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       setForm((c) => ({ ...c, cover_image_url: res.data.url }))
+      setErrors((prev) => { const { cover_image_url, ...rest } = prev; return rest })
     } finally {
       setImageUploading(false)
       e.target.value = ''
@@ -118,6 +119,10 @@ export default function ProductForm({ initialData, productId, onSuccess }: Props
 
   const saveProduct = async (isActive: boolean) => {
     setErrors({})
+    if (!form.cover_image_url) {
+      setErrors({ cover_image_url: ['Logo is required'] })
+      return
+    }
     setLoading(true)
     try {
       const payload = {
@@ -150,7 +155,7 @@ export default function ProductForm({ initialData, productId, onSuccess }: Props
   }
 
   const ImageUploader = () => (
-    <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2.5">
+    <div className={`rounded-lg border border-dashed bg-slate-50/60 p-2.5 ${errors.cover_image_url ? 'border-red-300 bg-red-50/60' : 'border-slate-200'}`}>
       <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-white">
@@ -269,6 +274,7 @@ export default function ProductForm({ initialData, productId, onSuccess }: Props
 
                 <Field label="Logo">
                   <ImageUploader />
+                  {errors.cover_image_url?.map((m) => <p key={m} className="text-xs text-red-500">{m}</p>)}
                 </Field>
               </div>
 

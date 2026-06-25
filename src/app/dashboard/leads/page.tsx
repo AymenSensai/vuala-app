@@ -302,6 +302,11 @@ export default function WishlistsPage() {
     const s = String(v); return /[",\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s
   }
   const exportWishlists = (rows: Lead[]) => {
+    if (user?.plan === 'free') {
+      showToast('Exporting wishlists is a Pro feature — upgrade to download your list as CSV')
+      return
+    }
+
     const data = [
       ['Name', 'Email', 'Wishlist item', 'Source', 'Contact status', 'Joined date'],
       ...rows.map((r) => [

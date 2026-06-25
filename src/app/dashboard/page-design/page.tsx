@@ -14,6 +14,17 @@ import { CSS } from '@dnd-kit/utilities'
 import { useAuth } from '@/lib/auth'
 import api from '@/lib/api'
 import { GripVertical, Monitor, Smartphone, Tablet } from 'lucide-react'
+import {
+  FeedbackBubbleIcon,
+  FEEDBACK_BUBBLE_ICON_KEYS,
+  DEFAULT_FEEDBACK_BUBBLE_ICON,
+  FEEDBACK_BUBBLE_SHAPE_KEYS,
+  FEEDBACK_BUBBLE_SHAPE_LABELS,
+  DEFAULT_FEEDBACK_BUBBLE_SHAPE,
+  feedbackBubbleShapeRadius,
+  type FeedbackBubbleIconKey,
+  type FeedbackBubbleShapeKey,
+} from '@/lib/feedbackBubbleIcons'
 
 type PageThemePreset = 'minimal' | 'midnight' | 'cream' | 'neon' | 'rose'
 type PageCardStyle = 'soft' | 'solid' | 'glass'
@@ -24,6 +35,8 @@ type PageHeadingWeight = 'bold' | 'black'
 type PageShadowStyle = 'none' | 'soft' | 'bold'
 type PageBackgroundStyle = 'solid' | 'gradient'
 type PageSection = 'products' | 'roadmap'
+type PageLayoutMode = 'stacked' | 'split'
+type PageProfilePosition = 'start' | 'end'
 
 interface PageThemeConfig {
   preset: PageThemePreset
@@ -42,6 +55,8 @@ interface PageThemeConfig {
   gradient_angle: number
   section_order: PageSection[]
   section_visibility: { roadmap: boolean; social_links: boolean }
+  layout_mode: PageLayoutMode
+  profile_position: PageProfilePosition
 }
 
 const DEFAULT_PAGE_THEME: PageThemeConfig = {
@@ -61,6 +76,8 @@ const DEFAULT_PAGE_THEME: PageThemeConfig = {
   gradient_angle: 135,
   section_order: ['products', 'roadmap'],
   section_visibility: { roadmap: true, social_links: true },
+  layout_mode: 'stacked',
+  profile_position: 'start',
 }
 
 const normalizePageTheme = (theme?: Partial<PageThemeConfig> | null): PageThemeConfig => ({
@@ -76,13 +93,6 @@ const PAGE_THEME_PRESETS: Array<{ key: PageThemePreset; label: string; theme: Pi
   { key: 'cream', label: 'Cream', theme: { preset: 'cream', accent_color: '#D97706', background_color: '#FFF7ED', card_color: '#FFFBF5', text_color: '#2F2518', card_style: 'soft', button_style: 'rounded', layout: 'spacious' } },
   { key: 'neon', label: 'Neon', theme: { preset: 'neon', accent_color: '#06B6D4', background_color: '#ECFEFF', card_color: '#FFFFFF', text_color: '#083344', card_style: 'solid', button_style: 'square', layout: 'compact' } },
   { key: 'rose', label: 'Rose', theme: { preset: 'rose', accent_color: '#E11D48', background_color: '#FFF1F2', card_color: '#FFFFFF', text_color: '#3F1722', card_style: 'soft', button_style: 'pill', layout: 'spacious' } },
-]
-
-const FONT_OPTIONS: Array<{ value: PageFontFamily; label: string; stack: string }> = [
-  { value: 'sans', label: 'Sans', stack: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
-  { value: 'serif', label: 'Serif', stack: 'Georgia, Cambria, "Times New Roman", Times, serif' },
-  { value: 'mono', label: 'Mono', stack: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' },
-  { value: 'rounded', label: 'Rounded', stack: '"SF Pro Rounded", "Varela Round", Verdana, sans-serif' },
 ]
 
 const SECTION_LABELS: Record<PageSection, string> = {
@@ -191,6 +201,11 @@ function SortableSectionRow({
 export default function PageDesignPage() {
   const { user } = useAuth()
   const [theme, setTheme] = useState<PageThemeConfig>(DEFAULT_PAGE_THEME)
+  const [feedbackEnabled, setFeedbackEnabled] = useState(true)
+  const [hideBranding, setHideBranding] = useState(false)
+  const [brandingError, setBrandingError] = useState('')
+  const [feedbackBubbleIcon, setFeedbackBubbleIcon] = useState<FeedbackBubbleIconKey>(DEFAULT_FEEDBACK_BUBBLE_ICON)
+  const [feedbackBubbleShape, setFeedbackBubbleShape] = useState<FeedbackBubbleShapeKey>(DEFAULT_FEEDBACK_BUBBLE_SHAPE)
   const [loading, setLoading] = useState(true)
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('web')
   const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -202,11 +217,15 @@ export default function PageDesignPage() {
     api.get('/storefront').then((res) => {
       skipNextSave.current = true
       setTheme(normalizePageTheme(res.data?.theme_config))
+      setFeedbackEnabled(res.data?.feedback_enabled !== false)
+      setFeedbackBubbleIcon(res.data?.feedback_bubble_icon ?? DEFAULT_FEEDBACK_BUBBLE_ICON)
+      setFeedbackBubbleShape(res.data?.feedback_bubble_shape ?? DEFAULT_FEEDBACK_BUBBLE_SHAPE)
+      setHideBranding(res.data?.hide_branding ?? false)
     }).finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
-    iframeRef.current?.contentWindow?.postMessage({ type: 'vuala-theme-preview', theme }, window.location.origin)
+    iframeRef.current?.contentWindow?.postMessage({ type: 'vuala-theme-preview', theme, feedbackEnabled, feedbackBubbleIcon, feedbackBubbleShape, hideBranding }, window.location.origin)
 
     if (skipNextSave.current) {
       skipNextSave.current = false
@@ -214,14 +233,26 @@ export default function PageDesignPage() {
     }
 
     const timer = setTimeout(() => {
-      api.put('/storefront', { theme_config: theme })
+      api.put('/storefront', {
+        theme_config: theme,
+        feedback_enabled: feedbackEnabled,
+        feedback_bubble_icon: feedbackBubbleIcon,
+        feedback_bubble_shape: feedbackBubbleShape,
+        hide_branding: hideBranding,
+      }).catch((err: unknown) => {
+        const status = (err as { response?: { status?: number; data?: { message?: string } } })?.response?.status
+        if (status === 403) {
+          setHideBranding(false)
+          setBrandingError("Removing the Vuala badge is a Pro feature. Upgrade to hide it from your page.")
+        }
+      })
     }, 600)
 
     return () => clearTimeout(timer)
-  }, [theme])
+  }, [theme, feedbackEnabled, feedbackBubbleIcon, feedbackBubbleShape, hideBranding])
 
   const sendPreview = () => {
-    iframeRef.current?.contentWindow?.postMessage({ type: 'vuala-theme-preview', theme }, window.location.origin)
+    iframeRef.current?.contentWindow?.postMessage({ type: 'vuala-theme-preview', theme, feedbackEnabled, feedbackBubbleIcon, feedbackBubbleShape, hideBranding }, window.location.origin)
   }
 
   const applyPreset = (preset: typeof PAGE_THEME_PRESETS[number]['theme']) => {
@@ -250,10 +281,10 @@ export default function PageDesignPage() {
   const previewFrameWidth = Math.round(PREVIEW_WIDTH * scale)
 
   return (
-    <div className="min-h-full bg-[#FCFCFD] p-[18px_24px_36px_24px]">
-      <div className="flex gap-6 items-start">
-        {/* Left: controls */}
-        <div className="flex-1 min-w-0">
+    <div className="h-full bg-[#FCFCFD] p-[18px_24px_36px_24px]">
+      <div className="flex h-full gap-6">
+        {/* Left: controls, scrolls independently */}
+        <div className="flex-1 min-w-0 h-full overflow-y-auto pr-1">
           <section className="rounded-[12px] border border-[#e6e8ef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
 
             {/* Presets */}
@@ -321,39 +352,10 @@ export default function PageDesignPage() {
               )}
             </div>
 
-            {/* Typography */}
-            <div className={ROW}>
-              <p className={ROW_TITLE}>Typography</p>
-              <div className="grid grid-cols-4 gap-1.5">
-                {FONT_OPTIONS.map((font) => (
-                  <button
-                    key={font.value}
-                    type="button"
-                    onClick={() => setTheme((c) => ({ ...c, font_family: font.value }))}
-                    style={{ fontFamily: font.stack }}
-                    className={`h-10 rounded-[8px] border text-[13px] font-semibold transition-colors ${
-                      theme.font_family === font.value
-                        ? 'border-[#394BE8] bg-[#f4f5fe] text-[#394BE8]'
-                        : 'border-[#e6e8ec] bg-white text-[#64748B] hover:border-[#cbd5e1]'
-                    }`}
-                  >
-                    {font.label}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-2.5 w-44">
-                <PillGroup
-                  value={theme.heading_weight}
-                  options={[{ value: 'bold', label: 'Bold' }, { value: 'black', label: 'Extra bold' }]}
-                  onChange={(v) => setTheme((c) => ({ ...c, heading_weight: v }))}
-                />
-              </div>
-            </div>
-
             {/* Cards, buttons, shadow & spacing */}
             <div className={ROW}>
               <p className={ROW_TITLE}>Cards & buttons</p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                 <div className="space-y-1.5">
                   <span className="block text-[11px] text-[#94a3b8]">Cards</span>
                   <PillGroup
@@ -384,6 +386,31 @@ export default function PageDesignPage() {
                     value={theme.layout}
                     options={[{ value: 'compact', label: 'Compact' }, { value: 'spacious', label: 'Spacious' }]}
                     onChange={(v) => setTheme((c) => ({ ...c, layout: v }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Layout & alignment */}
+            <div className={ROW}>
+              <p className={ROW_TITLE}>Layout & alignment</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] text-[#94a3b8]">Arrangement</span>
+                  <PillGroup
+                    value={theme.layout_mode}
+                    options={[{ value: 'stacked', label: 'Stacked' }, { value: 'split', label: 'Side by side' }]}
+                    onChange={(v) => setTheme((c) => ({ ...c, layout_mode: v }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] text-[#94a3b8]">Profile position</span>
+                  <PillGroup
+                    value={theme.profile_position}
+                    options={theme.layout_mode === 'split'
+                      ? [{ value: 'start', label: 'Left' }, { value: 'end', label: 'Right' }]
+                      : [{ value: 'start', label: 'Top' }, { value: 'end', label: 'Bottom' }]}
+                    onChange={(v) => setTheme((c) => ({ ...c, profile_position: v }))}
                   />
                 </div>
               </div>
@@ -424,12 +451,92 @@ export default function PageDesignPage() {
                 Show social links in profile header
               </label>
             </div>
+
+            {/* Branding */}
+            <div className={ROW}>
+              <label className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[13px] font-semibold text-[#15171f]">Remove &quot;Powered by Vuala&quot;</p>
+                  <p className="mt-0.5 text-[11.5px] text-[#94a3b8]">
+                    {user?.plan === 'free' ? 'Upgrade to Pro to hide the badge from your page.' : 'Hide the badge at the bottom of your page.'}
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={hideBranding}
+                  disabled={user?.plan === 'free'}
+                  onChange={() => { setBrandingError(''); setHideBranding((v) => !v) }}
+                  className="h-3.5 w-3.5 rounded border-[#cbd5e1] text-[#394BE8] focus:ring-[#394BE8] disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+              {brandingError && (
+                <p className="mt-2 text-[11.5px] font-medium text-amber-700">{brandingError}</p>
+              )}
+            </div>
+
+            {/* Feedback bubble */}
+            <div className={ROW}>
+              <div className="flex items-center justify-between">
+                <p className="text-[13px] font-semibold text-[#15171f]">Feedback bubble</p>
+                <label className="flex items-center gap-1.5 text-[12px] font-medium text-[#64748B]">
+                  <input
+                    type="checkbox"
+                    checked={feedbackEnabled}
+                    onChange={() => setFeedbackEnabled((v) => !v)}
+                    className="h-3.5 w-3.5 rounded border-[#cbd5e1] text-[#394BE8] focus:ring-[#394BE8]"
+                  />
+                  Enabled
+                </label>
+              </div>
+
+              <div className={!feedbackEnabled ? 'pointer-events-none opacity-40' : ''}>
+                <span className="mt-3 block text-[11px] text-[#94a3b8]">Icon</span>
+                <div className="mt-1.5 grid grid-cols-5 gap-1.5">
+                  {FEEDBACK_BUBBLE_ICON_KEYS.map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setFeedbackBubbleIcon(key)}
+                      className={`flex h-11 items-center justify-center rounded-[8px] border transition-colors ${
+                        feedbackBubbleIcon === key
+                          ? 'border-[#394BE8] bg-[#f4f5fe] text-[#394BE8]'
+                          : 'border-[#e6e8ec] bg-white text-[#64748B] hover:border-[#cbd5e1] hover:bg-[#fafbfc]'
+                      }`}
+                    >
+                      <FeedbackBubbleIcon icon={key} className="h-5 w-5" />
+                    </button>
+                  ))}
+                </div>
+
+                <span className="mt-3 block text-[11px] text-[#94a3b8]">Shape</span>
+                <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                  {FEEDBACK_BUBBLE_SHAPE_KEYS.map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setFeedbackBubbleShape(key)}
+                      className={`flex h-14 flex-col items-center justify-center gap-1.5 rounded-[8px] border transition-colors ${
+                        feedbackBubbleShape === key
+                          ? 'border-[#394BE8] bg-[#f4f5fe] text-[#394BE8]'
+                          : 'border-[#e6e8ec] bg-white text-[#64748B] hover:border-[#cbd5e1] hover:bg-[#fafbfc]'
+                      }`}
+                    >
+                      <span
+                        className="h-5 w-5"
+                        style={{ background: feedbackBubbleShape === key ? '#394BE8' : '#cbd1e6', borderRadius: feedbackBubbleShapeRadius(key) }}
+                      />
+                      <span className="text-[11px] font-medium">{FEEDBACK_BUBBLE_SHAPE_LABELS[key]}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </section>
         </div>
 
         {/* Right: live preview */}
         {user?.storefront && (
-          <div className="flex-shrink-0 sticky top-20">
+          <div className="flex-shrink-0">
             <div className="mb-3 mx-auto flex w-32 items-center justify-center gap-0.5 rounded-lg bg-slate-100 p-[3px]">
               {DEVICE_OPTIONS.map(({ key, label, icon: Icon }) => (
                 <button

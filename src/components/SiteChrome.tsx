@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useAuth } from '@/lib/auth'
 
 type SiteHeaderProps = {
   logoHref?: string
@@ -8,6 +9,8 @@ type SiteHeaderProps = {
 }
 
 export function SiteHeader({ logoHref = '#top', sectionPrefix = '' }: SiteHeaderProps) {
+  const { user, loading } = useAuth()
+
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(251,251,252,0.8)', backdropFilter: 'saturate(180%) blur(12px)', borderBottom: '1px solid #eef0f3' }}>
       <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '0 28px', height: '66px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -16,7 +19,7 @@ export function SiteHeader({ logoHref = '#top', sectionPrefix = '' }: SiteHeader
           <span style={{ fontWeight: 700, fontSize: '19px', letterSpacing: '-0.02em', color: '#1b1f27' }}>vuala</span>
         </a>
         <nav style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-          {[['features', 'Features'], ['wishlists', 'Wishlists'], ['pricing', 'Pricing'], ['faq', 'FAQ']].map(([id, label]) => (
+          {[['features', 'Features'], ['wishlists', 'Wishlists'], ['pricing', 'Pricing']].map(([id, label]) => (
             id === 'wishlists' ? (
               <Link key={id} href="/wishlists" style={{ textDecoration: 'none', color: '#5c6573', fontSize: '14.5px', fontWeight: 500 }}>{label}</Link>
             ) : (
@@ -25,10 +28,18 @@ export function SiteHeader({ logoHref = '#top', sectionPrefix = '' }: SiteHeader
           ))}
         </nav>
         <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-          <Link href="/login" style={{ textDecoration: 'none', color: '#5c6573', fontSize: '14.5px', fontWeight: 500 }}>Sign in</Link>
-          <Link href="/register" style={{ textDecoration: 'none', background: '#394be8', color: '#fff', fontSize: '14px', fontWeight: 600, padding: '9px 17px', borderRadius: '9px', boxShadow: '0 1px 2px rgba(57,75,232,.25)' }}>
-            Create your page
-          </Link>
+          {loading ? null : user ? (
+            <Link href="/dashboard" style={{ textDecoration: 'none', background: '#394be8', color: '#fff', fontSize: '14px', fontWeight: 600, padding: '9px 17px', borderRadius: '9px', boxShadow: '0 1px 2px rgba(57,75,232,.25)' }}>
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" style={{ textDecoration: 'none', color: '#5c6573', fontSize: '14.5px', fontWeight: 500 }}>Sign in</Link>
+              <Link href="/register" style={{ textDecoration: 'none', background: '#394be8', color: '#fff', fontSize: '14px', fontWeight: 600, padding: '9px 17px', borderRadius: '9px', boxShadow: '0 1px 2px rgba(57,75,232,.25)' }}>
+                Create your page
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -41,7 +52,7 @@ export function SiteFooter() {
     { heading: 'Company', links: ['Privacy', 'Terms'] },
   ]
 
-  const hrefs: Record<string, string> = { Features: '#features', Wishlists: '#wishlist', Pricing: '#pricing' }
+  const hrefs: Record<string, string> = { Features: '#features', Wishlists: '#wishlist', Pricing: '#pricing', Privacy: '/privacy', Terms: '/terms-of-use' }
 
   return (
     <footer style={{ background: '#fff', borderTop: '1px solid #f0f1f4' }}>
@@ -70,7 +81,7 @@ export function SiteFooter() {
         </div>
 
         <div style={{ paddingTop: '26px', borderTop: '1px solid #f0f1f4' }}>
-          <span style={{ fontSize: '13px', color: '#9aa2b1' }}>© 2026 Vuala Labs, Inc.</span>
+          <span style={{ fontSize: '13px', color: '#9aa2b1' }}>© 2026 Vuala</span>
         </div>
       </div>
     </footer>

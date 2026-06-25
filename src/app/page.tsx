@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SiteFooter, SiteHeader } from '@/components/SiteChrome'
+import {
+  GripVertical, Pencil, Trash2, Monitor, Tablet, Smartphone, Plus, Rocket,
+  Star, Trophy, TrendingUp, Search, Download, ChevronDown, Maximize2,
+  MousePointerClick, ExternalLink, ArrowBigUpDash,
+} from 'lucide-react'
 
 // ─── SVG icon primitives ──────────────────────────────────────────────────────
 
@@ -14,24 +19,14 @@ function Check({ color = '#394be8', size = 15 }: { color?: string; size?: number
   )
 }
 
-function Heart({ filled }: { filled: boolean }) {
+function Heart({ filled, size = 15 }: { filled: boolean; size?: number }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill={filled ? '#fff' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? '#fff' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1l1.7 1.7L12 21.5l7.1-7.1 1.7-1.7a5 5 0 0 0 0-7.1z" />
     </svg>
   )
 }
 
-
-function PlusMinusIcon({ open }: { open: boolean }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-      style={{ transform: open ? 'rotate(45deg)' : 'rotate(0deg)', transition: 'transform .2s' }}>
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  )
-}
 
 function GithubIcon() {
   return (
@@ -65,6 +60,14 @@ function DashPageIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor" className={className}>
       <path d="M465.4 192L431.1 144L209 144L174.7 192L465.4 192zM96 212.5C96 199.2 100.2 186.2 107.9 175.3L156.9 106.8C168.9 90 188.3 80 208.9 80L431 80C451.7 80 471.1 90 483.1 106.8L532 175.3C539.8 186.2 543.9 199.2 543.9 212.5L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 212.5z" />
+    </svg>
+  )
+}
+
+function DashPageDesignIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" className={className}>
+      <path fill="currentColor" fillRule="evenodd" clipRule="evenodd" d="M10.8468 21.9342C5.86713 21.3624 2 17.1328 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.1565 18.7173 16.7325 15.9135 16.3703C14.2964 16.1614 12.8386 15.9731 12.2619 16.888C11.8674 17.5136 12.2938 18.2938 12.8168 18.8168C13.4703 19.4703 13.4703 20.5297 12.8168 21.1832C12.2938 21.7062 11.5816 22.0186 10.8468 21.9342ZM11.085 6.99976C11.085 7.82818 10.4134 8.49976 9.585 8.49976C8.75658 8.49976 8.085 7.82818 8.085 6.99976C8.085 6.17133 8.75658 5.49976 9.585 5.49976C10.4134 5.49976 11.085 6.17133 11.085 6.99976ZM6.5 13C7.32843 13 8 12.3284 8 11.5C8 10.6716 7.32843 9.99998 6.5 9.99998C5.67157 9.99998 5 10.6716 5 11.5C5 12.3284 5.67157 13 6.5 13ZM17.5 13C18.3284 13 19 12.3284 19 11.5C19 10.6716 18.3284 9.99998 17.5 9.99998C16.6716 9.99998 16 10.6716 16 11.5C16 12.3284 16.6716 13 17.5 13ZM14.5 8.49998C15.3284 8.49998 16 7.82841 16 6.99998C16 6.17156 15.3284 5.49998 14.5 5.49998C13.6716 5.49998 13 6.17156 13 6.99998C13 7.82841 13.6716 8.49998 14.5 8.49998Z" />
     </svg>
   )
 }
@@ -111,11 +114,12 @@ function DashSettingsIcon({ className }: { className?: string }) {
   )
 }
 
-type ChromeKey = 'overview' | 'page' | 'wishlists' | 'inbox' | 'roadmap' | 'analytics' | 'settings'
+type ChromeKey = 'overview' | 'page' | 'pageDesign' | 'wishlists' | 'inbox' | 'roadmap' | 'analytics' | 'settings'
 
 const CHROME_NAV: { key: ChromeKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: 'overview', label: 'Overview', icon: DashOverviewIcon },
   { key: 'page', label: 'My Page', icon: DashPageIcon },
+  { key: 'pageDesign', label: 'Page design', icon: DashPageDesignIcon },
   { key: 'wishlists', label: 'Wishlists', icon: DashWishlistsIcon },
   { key: 'inbox', label: 'Inbox', icon: DashInboxIcon },
   { key: 'roadmap', label: 'Roadmap', icon: DashRoadmapIcon },
@@ -186,7 +190,7 @@ function DashboardChrome({
       <div className="grid" style={{ gridTemplateColumns: '56px 1fr' }}>
         {/* Icon rail */}
         <aside className="bg-[#F9FAFB] border-r border-slate-100 flex flex-col items-center py-3 gap-3">
-          <img src="/logo.png" alt="Vuala" className="h-9 w-9 rounded-xl object-cover" />
+          <img src="/logo.png" alt="Vuala" className="h-10 w-10 rounded-xl object-cover" />
           <nav className="flex flex-col items-center gap-2 mt-2">
             {CHROME_NAV.map(({ key, label, icon: Icon }) => {
               const isActive = key === active
@@ -198,12 +202,12 @@ function DashboardChrome({
                     isActive ? 'border border-slate-200 bg-white text-[#394BE8] shadow-sm' : 'text-[#797E93]'
                   }`}
                 >
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Icon className="h-5 w-5" />
                 </span>
               )
             })}
           </nav>
-          <div className="mt-auto h-9 w-9 rounded-xl bg-[#EEF1FF] text-[#394BE8] text-[11px] font-black flex items-center justify-center">
+          <div className="mt-auto h-11 w-11 rounded-xl bg-[#EEF1FF] text-[#394BE8] text-sm font-black flex items-center justify-center">
             MC
           </div>
         </aside>
@@ -211,10 +215,10 @@ function DashboardChrome({
         {/* Main */}
         <div className="flex flex-col min-w-0">
           <header className="h-14 flex items-center justify-between border-b border-slate-100 bg-[#F9FAFB] px-5 flex-shrink-0">
-            <span className="text-[15px] font-semibold text-slate-800">{headerLabel}</span>
+            <span className="text-base font-semibold text-slate-800">{headerLabel}</span>
             <div className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#394BE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" /></svg>
-              <span className="text-[12.5px] font-medium text-[#394BE8]">vuala.dev/maya</span>
+              <img src="/icon-mark.png" alt="" className="h-5 w-5 flex-shrink-0" />
+              <span className="text-sm font-medium text-[#394BE8]">vuala.bio/maya</span>
             </div>
           </header>
           <div className="flex-1 min-h-[460px] bg-[#FCFCFD] p-4 overflow-hidden">
@@ -233,12 +237,20 @@ const newsreaderStyle = "var(--font-newsreader), Georgia, serif"
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 function HeroSection() {
+  const router = useRouter()
   const [heroVotes, setHeroVotes] = useState(128)
   const [heroVoted, setHeroVoted] = useState(false)
+  const [username, setUsername] = useState('')
 
   function toggleHero() {
     setHeroVoted(v => !v)
     setHeroVotes(v => v + (heroVoted ? -1 : 1))
+  }
+
+  function claimIt(e: React.FormEvent) {
+    e.preventDefault()
+    const params = username.trim() ? `?username=${encodeURIComponent(username.trim())}` : ''
+    router.push(`/register${params}`)
   }
 
   return (
@@ -256,30 +268,23 @@ function HeroSection() {
             Vuala is a calm home for your projects. Showcase what you&apos;ve shipped, and let people add a wishlist for the things you&apos;re still building — so you ship with real demand behind you.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#fff', border: '1px solid #e0e5fb', borderRadius: '13px', padding: '6px 6px 6px 16px', maxWidth: '380px', boxShadow: '0 1px 2px rgba(20,24,40,.04),0 10px 24px -12px rgba(57,75,232,.3)' }}>
-            <span style={{ fontSize: '15px', color: '#9aa2b1', whiteSpace: 'nowrap' }}>vuala.dev/</span>
-            <input type="text" placeholder="yourname" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '15px', color: '#1b1f27', padding: '9px 0', fontWeight: 500 }} />
-            <button style={{ border: 'none', background: '#394be8', color: '#fff', fontFamily: 'inherit', fontWeight: 600, fontSize: '14px', padding: '11px 18px', borderRadius: '9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          <form onSubmit={claimIt} style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#fff', border: '1px solid #e0e5fb', borderRadius: '13px', padding: '6px 6px 6px 16px', maxWidth: '380px', boxShadow: '0 1px 2px rgba(20,24,40,.04),0 10px 24px -12px rgba(57,75,232,.3)' }}>
+            <span style={{ fontSize: '15px', color: '#9aa2b1', whiteSpace: 'nowrap' }}>vuala.bio/</span>
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="yourname" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '15px', color: '#1b1f27', padding: '9px 0', fontWeight: 500 }} />
+            <button type="submit" style={{ border: 'none', background: '#394be8', color: '#fff', fontFamily: 'inherit', fontWeight: 600, fontSize: '14px', padding: '11px 18px', borderRadius: '9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               Claim it
             </button>
-          </div>
+          </form>
         </div>
 
         {/* RIGHT: showcase + wishlist card */}
         <div>
           <div style={{ background: '#fff', border: '1px solid #ebedf1', borderRadius: '22px', boxShadow: '0 1px 2px rgba(20,24,40,.04),0 30px 60px -28px rgba(20,24,40,.22)', overflow: 'hidden' }}>
             {/* Profile header */}
-            <div style={{ padding: '24px 24px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '13px' }}>
-                <div style={{ width: '50px', height: '50px', borderRadius: '14px', background: 'linear-gradient(140deg,#6b7cf0,#394be8)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>MC</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: '16px', color: '#171a21' }}>Maya Chen</div>
-                  <div style={{ fontSize: '13px', color: '#8a93a3' }}>Designer &amp; indie maker · vuala.dev/maya</div>
-                </div>
-                <button style={{ border: '1px solid #e4e7ec', background: '#fff', color: '#1b1f27', fontFamily: 'inherit', fontSize: '13px', fontWeight: 600, padding: '7px 14px', borderRadius: '9px', cursor: 'pointer' }}>
-                  Follow
-                </button>
-              </div>
+            <div style={{ padding: '24px 24px 18px', textAlign: 'center' }}>
+              <div style={{ width: '56px', height: '56px', margin: '0 auto 12px', borderRadius: '50%', background: 'linear-gradient(140deg,#6b7cf0,#394be8)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '19px' }}>MC</div>
+              <div style={{ fontWeight: 700, fontSize: '17px', color: '#171a21' }}>Maya Chen</div>
+              <div style={{ fontSize: '13px', color: '#8a93a3', marginTop: '2px' }}>Designer &amp; indie maker</div>
             </div>
 
             {/* Shipped projects */}
@@ -297,8 +302,8 @@ function HeroSection() {
                     <div style={{ fontWeight: 600, fontSize: '14px', color: '#171a21' }}>Hued</div>
                     <div style={{ fontSize: '12.5px', color: '#8a93a3' }}>Color tools for designers</div>
                   </div>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#5c6573' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />Live
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', flexShrink: 0, fontSize: '12px', fontWeight: 600, color: '#5c6573', border: '1px solid #e4e7ec', borderRadius: '8px', padding: '6px 10px', whiteSpace: 'nowrap' }}>
+                    Visit website <ExternalLink size={12} />
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '11px', borderRadius: '13px', border: '1px solid #f0f1f4' }}>
@@ -311,40 +316,41 @@ function HeroSection() {
                     <div style={{ fontWeight: 600, fontSize: '14px', color: '#171a21' }}>Margins</div>
                     <div style={{ fontSize: '12.5px', color: '#8a93a3' }}>A quiet reading app</div>
                   </div>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#5c6573' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />Live
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', flexShrink: 0, fontSize: '12px', fontWeight: 600, color: '#5c6573', border: '1px solid #e4e7ec', borderRadius: '8px', padding: '6px 10px', whiteSpace: 'nowrap' }}>
+                    Visit website <ExternalLink size={12} />
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Building next / wishlist */}
-            <div style={{ margin: '16px', padding: '18px', borderRadius: '16px', background: '#f6f8fe', border: '1px solid #e6ebfb' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '11.5px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#5566c9' }}>Building next</span>
-                <span style={{ fontSize: '12px', color: '#8a93a3' }}>{heroVotes} on the wishlist</span>
-              </div>
-              <div style={{ fontFamily: newsreaderStyle, fontSize: '18px', fontWeight: 500, color: '#171a21', marginBottom: '3px' }}>Hued for Teams</div>
-              <div style={{ fontSize: '13px', color: '#5c6573', lineHeight: 1.5, marginBottom: '14px' }}>Shared palettes and design tokens for whole teams.</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-                <button
-                  onClick={toggleHero}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0,
-                    cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
-                    padding: '9px 14px', borderRadius: '9px', transition: 'all .15s',
-                    border: heroVoted ? '1px solid #394be8' : '1px solid #e2e6ee',
-                    background: heroVoted ? '#394be8' : '#fff',
-                    color: heroVoted ? '#fff' : '#1b1f27',
-                  }}
-                >
-                  <Heart filled={heroVoted} />
-                  {heroVoted ? 'On your list' : 'I want this'}
-                </button>
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid #e2e6ee', borderRadius: '9px', padding: '2px 2px 2px 12px' }}>
-                  <input type="email" placeholder="Notify me at launch" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '13px', color: '#1b1f27', padding: '7px 0' }} />
-                  <button style={{ border: 'none', background: '#1b1f27', color: '#fff', fontFamily: 'inherit', fontSize: '12.5px', fontWeight: 600, padding: '7px 12px', borderRadius: '7px', cursor: 'pointer' }}>Join</button>
+            <div style={{ margin: '16px', padding: '14px', borderRadius: '16px', background: '#f6f8fe', border: '1px solid #e6ebfb' }}>
+              <div style={{ fontSize: '11.5px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#5566c9', marginBottom: '10px' }}>Building next</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '13px' }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#fff', border: '1px solid #e6ebfb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Rocket size={17} color="#5566c9" />
                 </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: '14px', color: '#171a21' }}>Hued for Teams</div>
+                  <div style={{ fontSize: '12.5px', color: '#8a93a3' }}>Shared palettes &amp; design tokens</div>
+                </div>
+                {heroVoted ? (
+                  <span style={{ flexShrink: 0, fontSize: '12px', fontWeight: 600, color: '#0f9d58', border: '1px solid #cdebd9', background: '#f0fbf5', borderRadius: '8px', padding: '7px 11px', whiteSpace: 'nowrap' }}>
+                    On the list
+                  </span>
+                ) : (
+                  <button
+                    onClick={toggleHero}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0,
+                      cursor: 'pointer', fontFamily: 'inherit', fontSize: '12.5px', fontWeight: 600,
+                      padding: '7px 11px', borderRadius: '8px', border: '1px solid #e2e6ee',
+                      background: '#fff', color: '#1b1f27', whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Wishlist {heroVotes} <ArrowBigUpDash size={14} />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -357,20 +363,18 @@ function HeroSection() {
 
 // ─── Page (Store) ──────────────────────────────────────────────────────────────
 
-function DeviceGlyph({ kind, active }: { kind: 'web' | 'tablet' | 'mobile'; active: boolean }) {
-  const color = active ? '#0F172A' : '#94A3B8'
-  if (kind === 'web') return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><rect x="3" y="4" width="18" height="12" rx="1.5" /><path d="M8 20h8" /></svg>
-  if (kind === 'tablet') return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /></svg>
-  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><rect x="7" y="2" width="10" height="20" rx="2.5" /></svg>
-}
-
-const DEVICE_FRAME: Record<'web' | 'tablet' | 'mobile', number> = { web: 256, tablet: 112, mobile: 74 }
+const DEVICE_FRAME: Record<'web' | 'tablet' | 'mobile', number> = { web: 196, tablet: 112, mobile: 78 }
+const DEVICE_OPTIONS = [
+  { key: 'web' as const, icon: Monitor },
+  { key: 'tablet' as const, icon: Tablet },
+  { key: 'mobile' as const, icon: Smartphone },
+]
 
 function PageSection() {
   const [items, setItems] = useState([
-    { title: 'Hued', type: 'Project', active: true },
-    { title: 'Margins newsletter', type: 'Project', active: true },
-    { title: 'Hued for Teams', type: 'Coming soon', active: false },
+    { title: 'Hued', desc: 'Color tools for designers', active: true },
+    { title: 'Margins newsletter', desc: 'A quiet reading app', active: true },
+    { title: 'Hued for Teams', desc: 'Shared palettes & tokens', active: false },
   ])
   const [device, setDevice] = useState<'web' | 'tablet' | 'mobile'>('web')
 
@@ -392,94 +396,99 @@ function PageSection() {
             One link. Your whole shipped catalog.
           </h2>
           <p style={{ fontSize: '16.5px', lineHeight: 1.65, color: '#5c6573', margin: '0 0 26px' }}>
-            Add your projects, reorder them, and toggle what&apos;s live — all from one screen. No theme files, no page builder, just the things you&apos;ve made.
+            Add your projects, arrange them your way, and control what&apos;s visible — all from one simple screen.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              ['Drag to reorder', ' — changes go live instantly.'],
-              ['Preview before you publish', ' — see exactly how it looks on web, tablet, or phone.'],
-              ['Your own link', ' — vuala.dev/you, no setup required.'],
-            ].map(([bold, rest]) => (
-              <div key={bold} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <span style={{ flexShrink: 0, width: '24px', height: '24px', borderRadius: '7px', background: '#eef1fd', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1px' }}>
-                  <Check />
-                </span>
-                <div style={{ fontSize: '15px' }}>
-                  <strong style={{ color: '#171a21', fontWeight: 600 }}>{bold}</strong>
-                  <span style={{ color: '#5c6573' }}>{rest}</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
         </Reveal>
 
         <Reveal delay={120}>
         <DashboardChrome active="page" headerLabel="My Page">
-          <div className="grid h-full gap-4" style={{ gridTemplateColumns: '1fr auto' }}>
-            <div className="flex min-w-0 flex-col gap-3">
-              <div className="flex items-center gap-2.5 rounded-2xl border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#EEF1FF] text-[11px] font-black text-[#394BE8]">MC</div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[12.5px] font-semibold text-slate-900">Maya Chen</p>
-                  <p className="truncate text-[11px] text-slate-400">Design engineer, small useful tools.</p>
-                </div>
-                <div className="flex flex-shrink-0 items-center gap-1.5 text-slate-300">
-                  <GithubIcon />
-                  <XIcon />
+          <div className="grid h-full gap-3.5" style={{ gridTemplateColumns: '1fr auto' }}>
+            <div className="flex min-w-0 flex-col">
+
+              {/* Profile */}
+              <div className="mb-3 pb-3 border-b border-slate-100">
+                <p className="mb-1.5 text-[9.5px] font-semibold uppercase tracking-[0.05em] text-slate-400">Profile</p>
+                <div className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#EEF1FF] text-[10.5px] font-black text-[#394BE8]">MC</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[12px] font-semibold text-slate-900">Maya Chen</p>
+                    <p className="truncate text-[10.5px] text-slate-400">Design engineer, small useful tools.</p>
+                  </div>
+                  <div className="flex flex-shrink-0 items-center gap-1.5 text-slate-300">
+                    <GithubIcon />
+                    <XIcon />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <p className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-slate-400">Items · 3</p>
-                <span className="rounded-lg bg-[#394BE8] px-2.5 py-1 text-[11px] font-semibold text-white">+ New</span>
+              {/* Items */}
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[9.5px] font-semibold uppercase tracking-[0.05em] text-slate-400">Items · {items.length}</p>
+                <span className="flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1 text-[10.5px] font-semibold text-white">
+                  <Plus className="h-2.5 w-2.5" /> New project
+                </span>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 {items.map((item) => (
-                  <div key={item.title} className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-white px-3 py-2.5">
-                    <div className="h-7 w-7 flex-shrink-0 rounded-lg bg-[#EEF1FF]" />
+                  <div key={item.title} className="flex items-center gap-2 rounded-xl border border-slate-100 bg-white px-2.5 py-2">
+                    <GripVertical className="h-3 w-3 flex-shrink-0 text-slate-300" />
+                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-slate-50">
+                      <Rocket className="h-3 w-3 text-slate-300" />
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[12.5px] font-medium text-slate-900">{item.title}</p>
-                      <p className="text-[10.5px] text-slate-400">{item.type}</p>
+                      <p className="truncate text-[11.5px] font-medium text-slate-900">{item.title}</p>
+                      <p className="truncate text-[10px] text-slate-400">{item.desc}</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => toggleItem(item.title)}
                       aria-label={`Toggle ${item.title}`}
-                      className={`relative h-4 w-7 flex-shrink-0 rounded-full transition-colors ${item.active ? 'bg-[#394BE8]' : 'bg-slate-200'}`}
+                      className={`relative inline-flex h-4 w-7 flex-shrink-0 items-center rounded-full transition-colors ${item.active ? 'bg-indigo-600' : 'bg-slate-200'}`}
                     >
-                      <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${item.active ? 'left-[15px]' : 'left-0.5'}`} />
+                      <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${item.active ? 'translate-x-[14px]' : 'translate-x-0.5'}`} />
                     </button>
+                    <Pencil className="h-3 w-3 flex-shrink-0 text-slate-300" />
+                    <Trash2 className="h-3 w-3 flex-shrink-0 text-slate-300" />
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex w-[100px] flex-shrink-0 flex-col items-center gap-2.5">
-              <div className="flex items-center gap-[3px] rounded-lg bg-slate-100 p-[3px]">
-                {(['web', 'tablet', 'mobile'] as const).map((kind) => (
+            {/* Live preview */}
+            <div className="flex flex-shrink-0 flex-col items-center gap-2" style={{ width: DEVICE_FRAME.web }}>
+              <div className="flex items-center justify-center gap-0.5 rounded-lg bg-slate-100 p-[3px]" style={{ width: 96 }}>
+                {DEVICE_OPTIONS.map(({ key, icon: Icon }) => (
                   <button
-                    key={kind}
+                    key={key}
                     type="button"
-                    onClick={() => setDevice(kind)}
-                    aria-label={`${kind} preview`}
-                    className={`flex h-6 w-6 items-center justify-center rounded-md transition-colors ${kind === device ? 'bg-white shadow-sm' : ''}`}
+                    onClick={() => setDevice(key)}
+                    aria-label={`${key} preview`}
+                    className="flex h-6 flex-1 items-center justify-center rounded-md transition-colors"
+                    style={{
+                      background: device === key ? '#fff' : 'transparent',
+                      color: device === key ? '#0F172A' : '#64748B',
+                      boxShadow: device === key ? '0 1px 2px rgba(15,23,42,0.12)' : 'none',
+                    }}
                   >
-                    <DeviceGlyph kind={kind} active={kind === device} />
+                    <Icon className="h-3 w-3" />
                   </button>
                 ))}
               </div>
               <div
-                className="flex h-[160px] flex-col gap-1.5 rounded-[16px] border border-slate-200 bg-white p-2 transition-[width] duration-200"
-                style={{ width: DEVICE_FRAME[device] }}
+                className="flex flex-col items-center gap-1.5 overflow-hidden rounded-[14px] border border-slate-100 p-2 transition-[width] duration-200"
+                style={{ width: DEVICE_FRAME[device], height: 170, background: '#F8FAFC' }}
               >
-                <div className="mx-auto h-6 w-6 rounded-full bg-[#EEF1FF]" />
-                <div className="mx-auto h-1.5 w-10 rounded bg-slate-100" />
-                <div className="mt-1 flex flex-1 flex-col gap-1.5">
-                  <div className="h-6 rounded-lg border border-slate-100 bg-slate-50" />
-                  <div className="h-6 rounded-lg border border-slate-100 bg-slate-50" />
-                  <div className="h-6 rounded-lg border border-slate-100 bg-slate-50" />
+                <div className="mt-1 h-6 w-6 flex-shrink-0 rounded-full bg-[#EEF1FF]" />
+                <div className="h-1.5 w-12 flex-shrink-0 rounded bg-slate-200" />
+                <div className="mt-1 flex w-full flex-1 flex-col gap-1">
+                  {items.filter((i) => i.active).map((item) => (
+                    <div key={item.title} className="flex items-center gap-1 rounded-[6px] border border-slate-100 bg-white px-1.5 py-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                      <span className="h-2.5 w-2.5 flex-shrink-0 rounded-[3px] bg-[#EEF1FF]" />
+                      <span className="truncate text-[7px] font-medium text-slate-700">{item.title}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -525,23 +534,6 @@ function WishlistSpotlight() {
           <p style={{ fontSize: '16.5px', lineHeight: 1.65, color: '#5c6573', margin: '0 0 26px' }}>
             Share the ideas you&apos;re working on. People upvote the ones they want and leave an email to hear when it ships. You build with proof of demand — and a warm list waiting on launch day.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              ['Gauge real interest', ' before you write a line of code.'],
-              ['Build a launch list', ' of people who asked to be notified.'],
-              ['Let demand set priorities', ' — the most-wanted ideas rise to the top.'],
-            ].map(([bold, rest]) => (
-              <div key={bold} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <span style={{ flexShrink: 0, width: '24px', height: '24px', borderRadius: '7px', background: '#eef1fd', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1px' }}>
-                  <Check />
-                </span>
-                <div style={{ fontSize: '15px' }}>
-                  <strong style={{ color: '#171a21', fontWeight: 600 }}>{bold}</strong>
-                  <span style={{ color: '#5c6573' }}>{rest}</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
         </Reveal>
 
@@ -600,18 +592,23 @@ function WishlistSpotlight() {
 
 // ─── Wishlists (dashboard side) ────────────────────────────────────────────────
 
+const WISHLIST_ROWS = [
+  { name: 'Jordan Lee', item: 'Hued for Teams', source: 'Twitter/X', dot: '#0f1419', joined: '2h ago', initials: 'JL', bg: '#eef0fd', ink: '#394be8' },
+  { name: 'Priya Nair', item: 'Public API', source: 'YouTube', dot: '#e0382f', joined: '5h ago', initials: 'PN', bg: '#fdf0ee', ink: '#c2542f' },
+  { name: 'Sam Okoro', item: 'Hued for Teams', source: 'Newsletter', dot: '#0e9f6e', joined: '1d ago', initials: 'SO', bg: '#eef7f1', ink: '#1f7a4d' },
+  { name: 'Alex Rivera', item: 'iOS app', source: 'Direct', dot: '#394be8', joined: '2d ago', initials: 'AR', bg: '#f7f1ee', ink: '#8a5a2f' },
+]
+
 function WishlistsDashboardSection() {
-  const rows = [
-    { name: 'Jordan Lee', product: 'Hued for Teams', source: 'Twitter/X' },
-    { name: 'Priya Nair', product: 'Public API', source: 'YouTube' },
-    { name: 'Sam Okoro', product: 'Hued for Teams', source: 'Newsletter' },
-  ]
+  const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Record<string, boolean>>({})
 
   function toggleRow(name: string) {
     setSelected((curr) => ({ ...curr, [name]: !curr[name] }))
   }
 
+  const q = search.trim().toLowerCase()
+  const rows = WISHLIST_ROWS.filter((r) => !q || r.name.toLowerCase().includes(q) || r.item.toLowerCase().includes(q))
   const selectedCount = Object.values(selected).filter(Boolean).length
 
   return (
@@ -620,29 +617,53 @@ function WishlistsDashboardSection() {
 
         <Reveal>
         <DashboardChrome active="wishlists" headerLabel="Wishlists">
-          <div className="flex h-full flex-col gap-3">
-            <div className="grid grid-cols-3 gap-2">
+          <div className="flex h-full flex-col gap-2.5">
+            {/* Summary cards */}
+            <div className="grid grid-cols-4 gap-2">
               {[
-                { label: 'Total wishlists', value: '426' },
-                { label: 'New this week', value: '+54' },
-                { label: 'Conversion', value: '12.4%' },
-              ].map((stat) => (
-                <div key={stat.label} className="rounded-[10px] border border-[#e6e8ec] bg-white px-2.5 py-2">
-                  <p className="text-[10px] font-medium text-[#64748B]">{stat.label}</p>
-                  <p className="mt-0.5 text-[15px] font-bold text-[#0F172A]">{stat.value}</p>
+                { icon: <Heart filled={false} size={13} />, label: 'Total wishlists', value: '426', detail: 'across 3 products' },
+                { icon: <Star className="h-[13px] w-[13px]" />, label: 'New this week', value: '+54', detail: 'vs. last week' },
+                { icon: <Trophy className="h-[13px] w-[13px]" />, label: 'Top item', value: 'Hued for Teams', detail: '212 wishlists', small: true },
+                { icon: <TrendingUp className="h-[13px] w-[13px]" />, label: 'Conversion', value: '12.4%', detail: 'of visitors' },
+              ].map((card) => (
+                <div key={card.label} className="flex items-start gap-1.5 rounded-[10px] border border-[#e6e8ec] bg-white px-2 py-1.5 min-w-0">
+                  <div className="flex h-[20px] w-[20px] flex-shrink-0 items-center justify-center rounded-[6px] bg-[#eef0fd] text-[#394be8]">{card.icon}</div>
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-medium leading-tight text-[#5b606e]">{card.label}</p>
+                    <p className={`font-semibold leading-tight text-[#15171f] ${card.small ? 'text-[10.5px] truncate' : 'text-[13px]'}`}>{card.value}</p>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-[8px] border border-[#e6e8ec] bg-white px-2.5 py-[7px] text-[11px] font-semibold text-[#8b909d]">
-                Contact wishlists
-                <span className="rounded-full bg-[#fdf3e3] px-1.5 py-[1px] text-[8.5px] font-bold uppercase text-[#92600a]">Soon</span>
+            {/* Toolbar */}
+            <div className="flex items-center gap-1.5">
+              <div className="relative min-w-0 flex-1">
+                <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-[#8b909d]" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search wishlists…"
+                  className="h-[26px] w-full rounded-[7px] border border-[#e6e8ec] bg-white pl-6 pr-2 text-[10.5px] text-[#15171f] outline-none placeholder:text-[#8b909d]"
+                />
+              </div>
+              <span className="inline-flex h-[26px] flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-[7px] border border-[#e6e8ec] bg-white px-2 text-[10px] font-medium text-[#15171f]">
+                All products <ChevronDown className="h-2.5 w-2.5 text-[#8b909d]" />
               </span>
-              <span className="rounded-[8px] bg-[#394be8] px-2.5 py-[7px] text-[11px] font-semibold text-white">Export</span>
+              <span className="inline-flex h-[26px] flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-[7px] bg-[#394be8] px-2 text-[10px] font-semibold text-white">
+                <Download className="h-2.5 w-2.5" /> Export
+              </span>
             </div>
 
+            {/* Table */}
             <div className="flex-1 overflow-hidden rounded-[10px] border border-[#e6e8ec] bg-white">
+              <div className="flex items-center gap-2 border-b border-[#e6e8ec] bg-[#fafbfc] px-2.5 py-1.5">
+                <span className="w-3 flex-shrink-0" />
+                <span className="flex-1 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Name</span>
+                <span className="flex-1 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Wishlist item</span>
+                <span className="w-[62px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Source</span>
+                <span className="w-[48px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Joined</span>
+              </div>
               {rows.map((row) => {
                 const isSelected = !!selected[row.name]
                 return (
@@ -650,31 +671,36 @@ function WishlistsDashboardSection() {
                     type="button"
                     key={row.name}
                     onClick={() => toggleRow(row.name)}
-                    className={`flex w-full items-center gap-2 border-b border-[#f0f1f4] px-2.5 py-2 text-left transition-colors last:border-0 ${isSelected ? 'bg-[#f4f5fe]' : 'hover:bg-[#fafbfd]'}`}
+                    className={`flex w-full items-center gap-2 border-b border-[#f0f1f4] px-2.5 py-[7px] text-left transition-colors last:border-0 ${isSelected ? 'bg-[#f4f5fe]' : 'hover:bg-[#fafbfd]'}`}
                   >
-                    <span className={`flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-[4px] border transition-colors ${isSelected ? 'border-[#394be8] bg-[#394be8]' : 'border-[#c9cdd6] bg-white'}`}>
-                      {isSelected && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                    <span className={`flex h-3 w-3 flex-shrink-0 items-center justify-center rounded-[4px] border transition-colors ${isSelected ? 'border-[#394be8] bg-[#394be8]' : 'border-[#c9cdd6] bg-white'}`}>
+                      {isSelected && <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
                     </span>
-                    <span className="inline-grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-[#eef0fd] text-[8px] font-bold text-[#394be8]">
-                      {row.name.split(' ').map((p) => p[0]).join('')}
+                    <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                      <span className="inline-grid h-4 w-4 flex-shrink-0 place-items-center rounded-full text-[7px] font-bold" style={{ background: row.bg, color: row.ink }}>{row.initials}</span>
+                      <span className="truncate text-[10.5px] font-semibold text-[#15171f]">{row.name}</span>
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[11.5px] font-semibold text-[#15171f]">{row.name}</p>
-                      <p className="truncate text-[10px] text-[#8b909d]">{row.product}</p>
-                    </div>
-                    <span className="flex-shrink-0 rounded-full border border-[#e8eaee] bg-[#f7f8fa] px-1.5 py-[1px] text-[9.5px] font-medium text-[#424754]">
-                      {row.source}
+                    <span className="min-w-0 flex-1 truncate text-[10px] text-[#5b606e]">{row.item}</span>
+                    <span className="flex w-[62px] flex-shrink-0 items-center gap-1 overflow-hidden">
+                      <span className="h-[5px] w-[5px] flex-shrink-0 rounded-full" style={{ background: row.dot }} />
+                      <span className="truncate text-[9px] font-medium text-[#424754]">{row.source}</span>
                     </span>
+                    <span className="w-[48px] flex-shrink-0 truncate text-[9px] text-[#8b909d]">{row.joined}</span>
                   </button>
                 )
               })}
+              {rows.length === 0 && (
+                <div className="px-3 py-6 text-center text-[10.5px] text-[#8b909d]">No matches</div>
+              )}
             </div>
 
-            {selectedCount > 0 && (
+            {selectedCount > 0 ? (
               <div className="flex items-center justify-between rounded-[8px] bg-[#15171f] px-2.5 py-[7px] text-[10.5px] font-medium text-white">
                 <span>{selectedCount} selected</span>
                 <span className="rounded-[6px] bg-white/10 px-2 py-[3px] font-semibold">Export selected</span>
               </div>
+            ) : (
+              <p className="px-1 text-[10px] text-[#8b909d]">Showing {rows.length} of 426 wishlists</p>
             )}
           </div>
         </DashboardChrome>
@@ -690,25 +716,8 @@ function WishlistsDashboardSection() {
             Know exactly who to email on launch day.
           </h2>
           <p style={{ fontSize: '16.5px', lineHeight: 1.65, color: '#5c6573', margin: '0 0 26px' }}>
-            Every wishlist join lands here with their email, which idea they wanted, and where they came from. Filter by product or source, export the list, and — soon — message everyone directly.
+            Every wishlist join lands here, with the details you need to follow up. Filter, export, and — soon — reach out directly.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              ['Filter by product or source', ' — find the people who want one specific thing.'],
-              ['Export anytime', ' — CSV, ready for your own email tool.'],
-              ['Contact wishlists', ' — message everyone on a list directly, coming soon.'],
-            ].map(([bold, rest]) => (
-              <div key={bold} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <span style={{ flexShrink: 0, width: '24px', height: '24px', borderRadius: '7px', background: '#eef1fd', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1px' }}>
-                  <Check />
-                </span>
-                <div style={{ fontSize: '15px' }}>
-                  <strong style={{ color: '#171a21', fontWeight: 600 }}>{bold}</strong>
-                  <span style={{ color: '#5c6573' }}>{rest}</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
         </Reveal>
 
@@ -717,134 +726,18 @@ function WishlistsDashboardSection() {
   )
 }
 
-// ─── Highlights strip (horizontal scroll) ──────────────────────────────────────
-
-const HIGHLIGHTS = [
-  {
-    title: 'GitHub import',
-    desc: 'Pull projects straight from your repos — no manual data entry.',
-    icon: <GithubIcon />,
-  },
-  {
-    title: 'Your own domain',
-    desc: 'Point a custom domain at your page whenever you’re ready.',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#394be8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18" /></svg>,
-  },
-  {
-    title: 'Live metrics',
-    desc: 'Stars, revenue, and traffic stay in sync automatically, once connected.',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#394be8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 17l5-5 4 4 8-8" /><path d="M15 8h5v5" /></svg>,
-  },
-  {
-    title: 'Email capture',
-    desc: 'Every wishlist join comes with an email you can actually reach.',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#394be8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>,
-  },
-  {
-    title: 'CSV & JSON export',
-    desc: 'Take every list with you, any time. No lock-in, ever.',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#394be8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12" /><path d="M7 10l5 5 5-5" /><path d="M5 21h14" /></svg>,
-  },
-  {
-    title: 'Multiple roadmaps',
-    desc: 'Separate boards for separate releases, betas, or products.',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#394be8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5" /><rect x="14" y="4" width="7" height="7" rx="1.5" /><rect x="3" y="15" width="7" height="7" rx="1.5" /><rect x="14" y="15" width="7" height="7" rx="1.5" /></svg>,
-  },
-  {
-    title: 'Source tracking',
-    desc: 'See exactly which post, tweet, or link brought someone in.',
-    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#394be8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="2.4" /><circle cx="18" cy="18" r="2.4" /><path d="M7.7 7.7l8.6 8.6" /></svg>,
-  },
-]
-
-function HighlightsStrip() {
-  const scrollerRef = useRef<HTMLDivElement>(null)
-
-  function scrollByCard(dir: 1 | -1) {
-    scrollerRef.current?.scrollBy({ left: dir * 264, behavior: 'smooth' })
-  }
-
-  return (
-    <section style={{ background: '#fff', borderTop: '1px solid #f0f1f4', borderBottom: '1px solid #f0f1f4' }}>
-      <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '80px 0 88px' }}>
-        <Reveal>
-          <div style={{ padding: '0 28px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap', marginBottom: '36px' }}>
-            <div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#394be8', letterSpacing: '0.02em' }}>And there&apos;s more</span>
-              <h2 style={{ fontFamily: newsreaderStyle, fontSize: '32px', lineHeight: 1.15, letterSpacing: '-0.01em', fontWeight: 500, margin: '10px 0 0', color: '#171a21' }}>
-                Small things that add up.
-              </h2>
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => scrollByCard(-1)}
-                aria-label="Scroll left"
-                style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #ebedf1', background: '#fff', color: '#5c6573', cursor: 'pointer', fontFamily: 'inherit', fontSize: '16px' }}
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollByCard(1)}
-                aria-label="Scroll right"
-                style={{ width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #ebedf1', background: '#fff', color: '#5c6573', cursor: 'pointer', fontFamily: 'inherit', fontSize: '16px' }}
-              >
-                ›
-              </button>
-            </div>
-          </div>
-        </Reveal>
-
-        <Reveal delay={120}>
-          <div
-            ref={scrollerRef}
-            className="no-scrollbar"
-            style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '4px 28px 10px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
-          >
-            {HIGHLIGHTS.map((h) => (
-              <div
-                key={h.title}
-                style={{ flexShrink: 0, width: '236px', scrollSnapAlign: 'start', background: '#fbfcfe', border: '1px solid #eef0f3', borderRadius: '16px', padding: '20px' }}
-              >
-                <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#eef1fd', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
-                  {h.icon}
-                </div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 6px', color: '#171a21' }}>{h.title}</h3>
-                <p style={{ fontSize: '13px', lineHeight: 1.55, color: '#5c6573', margin: 0 }}>{h.desc}</p>
-              </div>
-            ))}
-            <div style={{ flexShrink: 0, width: '12px' }} />
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  )
-}
-
 // ─── Inbox ──────────────────────────────────────────────────────────────────────
 
-const INBOX_STATUS_TONE: Record<'Open' | 'Replied' | 'Archived', string> = {
-  Open: 'text-[#394BE8] border-[#d9ddf9] bg-[#f4f5fe]',
-  Replied: 'text-[#1f7a4d] border-[#d2eadd] bg-[#eff8f2]',
-  Archived: 'text-[#64748b] border-[#e2e8f0] bg-[#f8fafc]',
-}
-const INBOX_STATUS_CYCLE: Record<'Open' | 'Replied' | 'Archived', 'Open' | 'Replied' | 'Archived'> = {
-  Open: 'Replied',
-  Replied: 'Archived',
-  Archived: 'Open',
-}
+const INBOX_MESSAGES = [
+  { name: 'Alicia Park', email: 'alicia@parkstudio.com', text: 'Loved Hued — any plans for a Figma plugin?', type: 'Feedback', tone: 'text-[#394BE8] border-[#d9ddf9] bg-[#f4f5fe]', source: 'Direct', received: '3h ago' },
+  { name: 'Marcus Webb', email: 'marcus@mwebb.io', text: 'Interested in a sponsorship for the newsletter.', type: 'Partnership', tone: 'text-[#0f766e] border-[#cde8e4] bg-[#f0fbfa]', source: 'Twitter/X', received: '1d ago' },
+  { name: 'Dana Iyer', email: 'dana.iyer@gmail.com', text: 'Export button throws an error on Safari.', type: 'Bug', tone: 'text-[#b91c1c] border-[#f2c9c9] bg-[#fff5f5]', source: 'Newsletter', received: '2d ago' },
+]
 
 function InboxSection() {
-  const [messages, setMessages] = useState<Array<{ name: string; text: string; type: string; typeTone: string; status: 'Open' | 'Replied' | 'Archived' }>>([
-    { name: 'Alicia Park', text: 'Loved Hued — any plans for a Figma plugin?', type: 'Feedback', typeTone: 'text-[#394BE8] border-[#d9ddf9] bg-[#f4f5fe]', status: 'Open' },
-    { name: 'Marcus Webb', text: 'Interested in a sponsorship for the newsletter.', type: 'Partnership', typeTone: 'text-[#0f766e] border-[#cde8e4] bg-[#f0fbfa]', status: 'Replied' },
-    { name: 'Dana Iyer', text: 'Export button throws an error on Safari.', type: 'Bug', typeTone: 'text-[#b91c1c] border-[#f2c9c9] bg-[#fff5f5]', status: 'Open' },
-  ])
-
-  function cycleStatus(name: string) {
-    setMessages((curr) => curr.map((m) => m.name === name ? { ...m, status: INBOX_STATUS_CYCLE[m.status] } : m))
-  }
+  const [search, setSearch] = useState('')
+  const q = search.trim().toLowerCase()
+  const messages = INBOX_MESSAGES.filter((m) => !q || m.name.toLowerCase().includes(q) || m.text.toLowerCase().includes(q))
 
   return (
     <section style={{ background: '#fff' }}>
@@ -862,56 +755,73 @@ function InboxSection() {
           <p style={{ fontSize: '16.5px', lineHeight: 1.65, color: '#5c6573', margin: '0 0 26px' }}>
             Every message from your page lands in one inbox, tagged by type and status — so a sponsorship offer or a bug report doesn&apos;t get buried in your regular email.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              ['Auto-tagged by type', ' — feedback, bugs, offers, and partnerships, sorted on arrival.'],
-              ['Track status', ' — open, replied, archived, so you know what still needs you.'],
-              ['Export anytime', ' — CSV, whenever you need it elsewhere.'],
-            ].map(([bold, rest]) => (
-              <div key={bold} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <span style={{ flexShrink: 0, width: '24px', height: '24px', borderRadius: '7px', background: '#eef1fd', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1px' }}>
-                  <Check />
-                </span>
-                <div style={{ fontSize: '15px' }}>
-                  <strong style={{ color: '#171a21', fontWeight: 600 }}>{bold}</strong>
-                  <span style={{ color: '#5c6573' }}>{rest}</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
         </Reveal>
 
         <Reveal delay={120}>
         <DashboardChrome active="inbox" headerLabel="Inbox">
-          <div className="flex h-full flex-col gap-3">
-            <div className="grid grid-cols-4 gap-2">
-              {[['Total', '48'], ['Open', '12'], ['Replied', '29'], ['Archived', '7']].map(([label, value]) => (
-                <div key={label} className="rounded-[10px] border border-[#e6e8ec] bg-white px-2 py-2">
-                  <p className="text-[9.5px] font-medium text-[#64748B]">{label}</p>
-                  <p className="mt-0.5 text-[14px] font-bold text-[#0F172A]">{value}</p>
+          <div className="flex h-full flex-col gap-2.5">
+            {/* Summary cards — one card divided by borders, matching the real Inbox page */}
+            <div className="grid grid-cols-4 rounded-[10px] border border-[#e6e8ec] bg-white">
+              {[
+                { label: 'Total messages', value: '48' },
+                { label: 'New this week', value: '+9' },
+                { label: 'Top type', value: 'Feedback', small: true },
+                { label: 'Unique senders', value: '41' },
+              ].map((item, i) => (
+                <div key={item.label} className={`px-2.5 py-2 ${i > 0 ? 'border-l border-[#f1f5f9]' : ''}`}>
+                  <p className="text-[9px] font-medium text-[#64748B]">{item.label}</p>
+                  <p className={`mt-0.5 font-bold leading-none text-[#0F172A] ${item.small ? 'text-[12px] truncate' : 'text-[15px]'}`}>{item.value}</p>
                 </div>
               ))}
             </div>
+
+            {/* Toolbar */}
+            <div className="flex items-center gap-1.5">
+              <div className="relative min-w-0 flex-1">
+                <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-[#8b909d]" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search messages…"
+                  className="h-[26px] w-full rounded-[7px] border border-[#e6e8ec] bg-white pl-6 pr-2 text-[10.5px] text-[#15171f] outline-none placeholder:text-[#8b909d]"
+                />
+              </div>
+              <span className="inline-flex h-[26px] flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-[7px] border border-[#e6e8ec] bg-white px-2 text-[10px] font-medium text-[#15171f]">
+                All types <ChevronDown className="h-2.5 w-2.5 text-[#8b909d]" />
+              </span>
+              <span className="inline-flex h-[26px] flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-[7px] bg-[#394be8] px-2 text-[10px] font-semibold text-white">
+                <Download className="h-2.5 w-2.5" /> Export
+              </span>
+            </div>
+
+            {/* Table */}
             <div className="flex-1 overflow-hidden rounded-[10px] border border-[#e6e8ec] bg-white">
+              <div className="flex items-center gap-2 border-b border-[#e6e8ec] bg-[#fafbfc] px-2.5 py-1.5">
+                <span className="w-[100px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Name</span>
+                <span className="flex-1 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Message</span>
+                <span className="w-[58px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Type</span>
+                <span className="w-[48px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Received</span>
+              </div>
               {messages.map((m) => (
-                <div key={m.name} className="flex items-center gap-2 border-b border-[#f0f1f4] px-2.5 py-2 last:border-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[11.5px] font-semibold text-[#15171f]">{m.name}</p>
-                    <p className="truncate text-[10px] text-[#8b909d]">{m.text}</p>
+                <div key={m.name} className="flex items-center gap-2 border-b border-[#f0f1f4] px-2.5 py-[7px] last:border-0">
+                  <div className="w-[100px] min-w-0 flex-shrink-0">
+                    <p className="truncate text-[10.5px] font-semibold text-[#15171f]">{m.name}</p>
+                    <p className="truncate text-[8.5px] text-[#8b909d]">{m.email}</p>
                   </div>
-                  <span className={`flex-shrink-0 rounded-full border px-1.5 py-[1px] text-[9px] font-medium ${m.typeTone}`}>{m.type}</span>
-                  <button
-                    type="button"
-                    onClick={() => cycleStatus(m.name)}
-                    title="Click to change status"
-                    className={`flex-shrink-0 rounded-full border px-1.5 py-[1px] text-[9px] font-medium transition-colors ${INBOX_STATUS_TONE[m.status]}`}
-                  >
-                    {m.status}
-                  </button>
+                  <div className="flex min-w-0 flex-1 items-center gap-1">
+                    <span className="min-w-0 flex-1 truncate text-[10px] text-[#5b606e]">{m.text}</span>
+                    <Maximize2 className="h-2.5 w-2.5 flex-shrink-0 text-[#8b909d]" />
+                  </div>
+                  <span className={`w-[58px] flex-shrink-0 truncate rounded-full border px-1.5 py-[1px] text-[8.5px] font-medium ${m.tone}`}>{m.type}</span>
+                  <span className="w-[48px] flex-shrink-0 truncate text-[9px] text-[#8b909d]">{m.received}</span>
                 </div>
               ))}
+              {messages.length === 0 && (
+                <div className="px-3 py-6 text-center text-[10.5px] text-[#8b909d]">No matches</div>
+              )}
             </div>
+            <p className="px-1 text-[10px] text-[#8b909d]">Showing {messages.length} of 48 messages</p>
           </div>
         </DashboardChrome>
         </Reveal>
@@ -929,18 +839,50 @@ const ROADMAP_PRIORITY_TONE: Record<'Low' | 'Medium' | 'High', string> = {
   High: 'text-[#b91c1c] border-[#f2c9c9] bg-[#fff5f5]',
 }
 const ROADMAP_PRIORITIES: Array<'Low' | 'Medium' | 'High'> = ['Low', 'Medium', 'High']
+const ROADMAP_TYPE_TONE: Record<string, string> = {
+  'New feature': 'text-[#394BE8] border-[#d9ddf9] bg-[#f4f5fe]',
+  'Improvement': 'text-[#92600a] border-[#f2e3c4] bg-[#fdf7ec]',
+  'Bug': 'text-[#b91c1c] border-[#f2c9c9] bg-[#fff5f5]',
+}
+
+type RoadmapItem = { title: string; type: string; priority: 'Low' | 'Medium' | 'High'; status: string }
+const ROADMAP_BOARDS: Array<{ id: string; title: string; items: RoadmapItem[] }> = [
+  {
+    id: 'hued', title: 'Hued', items: [
+      { title: 'Creator inbox for feedback', type: 'New feature', priority: 'High', status: 'In progress' },
+      { title: 'Wishlist source grouping', type: 'Improvement', priority: 'Medium', status: 'Planned' },
+      { title: 'Launch checklist', type: 'New feature', priority: 'Medium', status: 'Planned' },
+    ],
+  },
+  {
+    id: 'margins', title: 'Margins newsletter', items: [
+      { title: 'Dark mode reader', type: 'New feature', priority: 'High', status: 'Shipped' },
+      { title: 'Offline sync bug', type: 'Bug', priority: 'High', status: 'In progress' },
+    ],
+  },
+]
 
 function RoadmapSection() {
-  const [items, setItems] = useState<Array<{ title: string; type: string; typeTone: string; priority: 'Low' | 'Medium' | 'High' }>>([
-    { title: 'Creator inbox for feedback', type: 'New feature', typeTone: 'text-[#394BE8] border-[#d9ddf9] bg-[#f4f5fe]', priority: 'High' },
-    { title: 'Wishlist source grouping', type: 'Improvement', typeTone: 'text-[#92600a] border-[#f2e3c4] bg-[#fdf7ec]', priority: 'Medium' },
-    { title: 'Launch checklist', type: 'New feature', typeTone: 'text-[#394BE8] border-[#d9ddf9] bg-[#f4f5fe]', priority: 'Medium' },
-  ])
+  const [activeBoardId, setActiveBoardId] = useState(ROADMAP_BOARDS[0].id)
+  const [items, setItems] = useState(ROADMAP_BOARDS[0].items)
   const [openRow, setOpenRow] = useState<string | null>(null)
+
+  function selectBoard(id: string) {
+    setActiveBoardId(id)
+    setItems(ROADMAP_BOARDS.find((b) => b.id === id)?.items ?? [])
+    setOpenRow(null)
+  }
 
   function setPriority(title: string, priority: 'Low' | 'Medium' | 'High') {
     setItems((curr) => curr.map((item) => item.title === title ? { ...item, priority } : item))
     setOpenRow(null)
+  }
+
+  const counts = {
+    total: items.length,
+    planned: items.filter((i) => i.status === 'Planned').length,
+    active: items.filter((i) => i.status === 'In progress').length,
+    shipped: items.filter((i) => i.status === 'Shipped').length,
   }
 
   return (
@@ -949,48 +891,89 @@ function RoadmapSection() {
 
         <Reveal>
         <DashboardChrome active="roadmap" headerLabel="Roadmap">
-          <div className="flex h-full flex-col gap-3">
-            <div className="grid grid-cols-4 gap-2">
-              {[['Total', '12'], ['Planned', '4'], ['In progress', '3'], ['Shipped', '5']].map(([label, value]) => (
-                <div key={label} className="rounded-[10px] border border-[#e6e8ec] bg-white px-2 py-2">
-                  <p className="text-[9.5px] font-medium text-[#64748B]">{label}</p>
-                  <p className="mt-0.5 text-[14px] font-bold text-[#0F172A]">{value}</p>
-                </div>
-              ))}
-            </div>
-            <div className="flex-1 rounded-[10px] border border-[#e6e8ec] bg-white">
-              {items.map((item) => {
-                const isOpen = openRow === item.title
+          <div className="grid h-full gap-3" style={{ gridTemplateColumns: '88px 1fr' }}>
+
+            {/* Boards sidebar */}
+            <div className="flex flex-col gap-1.5">
+              <p className="px-0.5 text-[8px] font-semibold uppercase tracking-[0.06em] text-[#8b909d]">Roadmaps</p>
+              {ROADMAP_BOARDS.map((board) => {
+                const active = board.id === activeBoardId
                 return (
-                  <div key={item.title} className="flex items-center gap-2 border-b border-[#f0f1f4] px-2.5 py-2 last:border-0">
-                    <p className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-[#15171f]">{item.title}</p>
-                    <span className={`flex-shrink-0 rounded-full border px-1.5 py-[1px] text-[9px] font-medium ${item.typeTone}`}>{item.type}</span>
-                    <span className="relative flex-shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setOpenRow(isOpen ? null : item.title)}
-                        className={`rounded-full border px-1.5 py-[1px] text-[9px] font-medium transition-colors ${ROADMAP_PRIORITY_TONE[item.priority]}`}
-                      >
-                        {item.priority}
-                      </button>
-                      {isOpen && (
-                        <span className="absolute left-0 top-[calc(100%+3px)] z-10 w-[84px] overflow-hidden rounded-[8px] border border-[#e6e8ec] bg-white shadow-[0_8px_20px_rgba(16,24,40,0.14)]">
-                          {ROADMAP_PRIORITIES.map((p) => (
-                            <button
-                              key={p}
-                              type="button"
-                              onClick={() => setPriority(item.title, p)}
-                              className={`block w-full px-2 py-1 text-left text-[9px] font-medium transition-colors ${p === item.priority ? 'bg-[#f4f5fe] text-[#394be8]' : 'text-[#15171f] hover:bg-[#f7f8fa]'}`}
-                            >
-                              {p}
-                            </button>
-                          ))}
-                        </span>
-                      )}
-                    </span>
-                  </div>
+                  <button
+                    key={board.id}
+                    type="button"
+                    onClick={() => selectBoard(board.id)}
+                    className={`rounded-[10px] border px-2 py-1.5 text-left transition-colors ${active ? 'border-[#D9DDFF] bg-[#F4F5FE]' : 'border-[#e6e8ec] bg-white hover:bg-[#fafbfd]'}`}
+                  >
+                    <p className="truncate text-[9px] font-semibold text-[#15171f]">{board.title}</p>
+                    <p className="mt-0.5 text-[8px] font-semibold text-[#394be8]">{board.items.length} items</p>
+                  </button>
                 )
               })}
+              <span className="mt-0.5 flex items-center justify-center gap-1 rounded-[8px] border border-[#d9ddf9] bg-[#f4f5fe] px-1.5 py-1 text-[8px] font-semibold text-[#394BE8]">
+                <Plus className="h-2.5 w-2.5" /> Add
+              </span>
+            </div>
+
+            {/* Main */}
+            <div className="flex min-w-0 flex-col gap-2.5">
+              <div className="grid grid-cols-4 rounded-[10px] border border-[#e6e8ec] bg-white">
+                {[
+                  { label: 'Total features', value: String(counts.total) },
+                  { label: 'Planned', value: String(counts.planned) },
+                  { label: 'In progress', value: String(counts.active) },
+                  { label: 'Shipped', value: String(counts.shipped) },
+                ].map((item, i) => (
+                  <div key={item.label} className={`px-2.5 py-2 ${i > 0 ? 'border-l border-[#f1f5f9]' : ''}`}>
+                    <p className="text-[9px] font-medium text-[#64748B]">{item.label}</p>
+                    <p className="mt-0.5 text-[15px] font-bold leading-none text-[#0F172A]">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex-1 overflow-hidden rounded-[10px] border border-[#e6e8ec] bg-white">
+                <div className="flex items-center gap-2 border-b border-[#e6e8ec] bg-[#fafbfc] px-2.5 py-1.5">
+                  <span className="flex-1 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Feature</span>
+                  <span className="w-[64px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Type</span>
+                  <span className="w-[52px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Priority</span>
+                  <span className="w-[62px] flex-shrink-0 text-[8.5px] font-semibold uppercase tracking-[0.05em] text-[#8b909d]">Status</span>
+                </div>
+                {items.map((item) => {
+                  const isOpen = openRow === item.title
+                  return (
+                    <div key={item.title} className="flex items-center gap-2 border-b border-[#f0f1f4] px-2.5 py-[7px] last:border-0">
+                      <p className="min-w-0 flex-1 truncate text-[10.5px] font-semibold text-[#15171f]">{item.title}</p>
+                      <span className={`w-[64px] flex-shrink-0 truncate rounded-full border px-1.5 py-[1px] text-[8.5px] font-medium ${ROADMAP_TYPE_TONE[item.type] ?? 'text-[#64748b] border-[#e2e8f0] bg-[#f8fafc]'}`}>{item.type}</span>
+                      <span className="relative w-[52px] flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setOpenRow(isOpen ? null : item.title)}
+                          className={`rounded-full border px-1.5 py-[1px] text-[8.5px] font-medium transition-colors ${ROADMAP_PRIORITY_TONE[item.priority]}`}
+                        >
+                          {item.priority}
+                        </button>
+                        {isOpen && (
+                          <span className="absolute left-0 top-[calc(100%+3px)] z-10 w-[78px] overflow-hidden rounded-[8px] border border-[#e6e8ec] bg-white shadow-[0_8px_20px_rgba(16,24,40,0.14)]">
+                            {ROADMAP_PRIORITIES.map((p) => (
+                              <button
+                                key={p}
+                                type="button"
+                                onClick={() => setPriority(item.title, p)}
+                                className={`block w-full px-2 py-1 text-left text-[8.5px] font-medium transition-colors ${p === item.priority ? 'bg-[#f4f5fe] text-[#394be8]' : 'text-[#15171f] hover:bg-[#f7f8fa]'}`}
+                              >
+                                {p}
+                              </button>
+                            ))}
+                          </span>
+                        )}
+                      </span>
+                      <span className="w-[62px] flex-shrink-0 truncate rounded-[6px] border border-[#e6e8ec] bg-white px-1.5 py-[1px] text-[8.5px] font-medium text-[#15171f]">
+                        {item.status}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </DashboardChrome>
@@ -1008,23 +991,6 @@ function RoadmapSection() {
           <p style={{ fontSize: '16.5px', lineHeight: 1.65, color: '#5c6573', margin: '0 0 26px' }}>
             Track every idea by type, priority, and status. Keep multiple roadmaps for different releases, and let visitors see what&apos;s coming — not just what already shipped.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              ['Type, priority, and status', ' — every item tagged so the board stays scannable.'],
-              ['Multiple roadmaps', ' — separate boards for separate releases or products.'],
-              ['Mark what ships next', ' — flag items for the next update.'],
-            ].map(([bold, rest]) => (
-              <div key={bold} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <span style={{ flexShrink: 0, width: '24px', height: '24px', borderRadius: '7px', background: '#eef1fd', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1px' }}>
-                  <Check />
-                </span>
-                <div style={{ fontSize: '15px' }}>
-                  <strong style={{ color: '#171a21', fontWeight: 600 }}>{bold}</strong>
-                  <span style={{ color: '#5c6573' }}>{rest}</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
         </Reveal>
 
@@ -1035,21 +1001,30 @@ function RoadmapSection() {
 
 // ─── Analytics ──────────────────────────────────────────────────────────────────
 
-const ANALYTICS_METRICS = {
-  visitors: { label: 'Visitors', value: '2,418', color: '#394BE8', bars: [38, 52, 46, 64, 58, 78, 100] },
-  clicks: { label: 'Link clicks', value: '968', color: '#1893a8', bars: [30, 40, 55, 48, 62, 70, 90] },
-  wishlists: { label: 'Wishlists', value: '426', color: '#cf5e88', bars: [20, 35, 30, 45, 40, 60, 82] },
-} as const
-type AnalyticsMetricKey = keyof typeof ANALYTICS_METRICS
+const ANALYTICS_SERIES_COLOR = { visitors: '#394BE8', clicks: '#1893a8', wishlists: '#cf5e88' } as const
+const ANALYTICS_TIMELINE: Array<Record<keyof typeof ANALYTICS_SERIES_COLOR, number>> = [
+  { visitors: 38, clicks: 30, wishlists: 20 },
+  { visitors: 52, clicks: 40, wishlists: 35 },
+  { visitors: 46, clicks: 55, wishlists: 30 },
+  { visitors: 64, clicks: 48, wishlists: 45 },
+  { visitors: 58, clicks: 62, wishlists: 40 },
+  { visitors: 78, clicks: 70, wishlists: 60 },
+  { visitors: 100, clicks: 90, wishlists: 82 },
+]
+const ANALYTICS_SOURCES = [
+  { label: 'Twitter/X', visitors: 612, conv: 86 },
+  { label: 'YouTube', visitors: 348, conv: 64 },
+  { label: 'Direct', visitors: 240, conv: 38 },
+]
+const ANALYTICS_RANGES = [
+  { key: 'today' as const, label: 'Today' },
+  { key: '7d' as const, label: '7 days' },
+  { key: '30d' as const, label: '30 days' },
+]
 
 function AnalyticsSection() {
-  const sources = [
-    { label: 'Twitter/X', conv: 86 },
-    { label: 'YouTube', conv: 64 },
-    { label: 'Direct', conv: 38 },
-  ]
-  const [activeMetric, setActiveMetric] = useState<AnalyticsMetricKey>('visitors')
-  const metric = ANALYTICS_METRICS[activeMetric]
+  const [range, setRange] = useState<'today' | '7d' | '30d'>('30d')
+  const [seriesOn, setSeriesOn] = useState({ visitors: true, clicks: true, wishlists: true })
 
   return (
     <section style={{ background: '#fff' }}>
@@ -1067,65 +1042,95 @@ function AnalyticsSection() {
           <p style={{ fontSize: '16.5px', lineHeight: 1.65, color: '#5c6573', margin: '0 0 26px' }}>
             See where visitors come from, what they click, and which sources actually turn into wishlists — broken down by source, device, and country.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              ['Traffic timeline', ' — visitors, clicks, and wishlists, day by day.'],
-              ['Source breakdown', ' — see which channel actually converts.'],
-              ['Export to CSV', ' — daily timeline, sources, and country data.'],
-            ].map(([bold, rest]) => (
-              <div key={bold} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <span style={{ flexShrink: 0, width: '24px', height: '24px', borderRadius: '7px', background: '#eef1fd', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1px' }}>
-                  <Check />
-                </span>
-                <div style={{ fontSize: '15px' }}>
-                  <strong style={{ color: '#171a21', fontWeight: 600 }}>{bold}</strong>
-                  <span style={{ color: '#5c6573' }}>{rest}</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
         </Reveal>
 
         <Reveal delay={120}>
         <DashboardChrome active="analytics" headerLabel="Analytics">
-          <div className="flex h-full flex-col gap-3">
-            <div className="grid grid-cols-3 gap-2">
-              {(Object.keys(ANALYTICS_METRICS) as AnalyticsMetricKey[]).map((key) => {
-                const m = ANALYTICS_METRICS[key]
-                const isActive = key === activeMetric
-                return (
+          <div className="flex h-full flex-col gap-2.5">
+
+            {/* Date range bar */}
+            <div className="flex items-center gap-2 rounded-[10px] border border-[#e6e8ef] bg-white px-2 py-[6px]">
+              <div className="flex gap-[2px] rounded-[7px] bg-[#f0f2f6] p-[2px]">
+                {ANALYTICS_RANGES.map((o) => (
                   <button
-                    key={key}
+                    key={o.key}
                     type="button"
-                    onClick={() => setActiveMetric(key)}
-                    className="rounded-[10px] border bg-white px-2.5 py-2 text-left transition-colors"
-                    style={{ borderColor: isActive ? m.color : '#e6e8ef', boxShadow: isActive ? `0 0 0 1px ${m.color}` : 'none' }}
+                    onClick={() => setRange(o.key)}
+                    className={`rounded-[6px] px-[7px] py-[3px] text-[8.5px] font-semibold transition-colors ${range === o.key ? 'bg-white text-[#1b2230] shadow-[0_1px_3px_rgba(15,23,42,0.1)]' : 'text-[#6b7484]'}`}
                   >
-                    <p className="text-[9.5px] font-bold uppercase tracking-[0.04em] text-[#6b7484]">{m.label}</p>
-                    <p className="mt-1 text-[16px] font-bold tracking-tight" style={{ color: isActive ? m.color : '#1b2230' }}>{m.value}</p>
+                    {o.label}
                   </button>
-                )
-              })}
+                ))}
+              </div>
+              <span className="ml-auto inline-flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-[7px] border border-[#d9dde6] bg-white px-2 py-1 text-[9px] font-semibold text-[#303849]">
+                <Download className="h-2.5 w-2.5" /> Export
+              </span>
             </div>
 
+            {/* Summary cards */}
+            <div className="flex gap-2">
+              {[
+                { label: 'VISITORS', value: '2,418', iconBg: '#eef0fd', icon: (
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#394BE8" strokeWidth="1.6" strokeLinecap="round"><circle cx="8" cy="5.2" r="2.6" /><path d="M2.8 13.8c.6-2.8 2.6-4.3 5.2-4.3s4.6 1.5 5.2 4.3" /></svg>
+                ) },
+                { label: 'LINK CLICKS', value: '968', iconBg: '#e7f4f6', icon: <MousePointerClick className="h-[11px] w-[11px] text-[#15808f]" /> },
+                { label: 'WISHLISTS', value: '426', iconBg: '#fbeef3', icon: <Star className="h-[11px] w-[11px] text-[#c2547e]" fill="#c2547e" /> },
+              ].map((card) => (
+                <div key={card.label} className="flex-1 min-w-0 rounded-[10px] border border-[#e6e8ef] bg-white px-2.5 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex h-[19px] w-[19px] flex-shrink-0 items-center justify-center rounded-[6px]" style={{ background: card.iconBg }}>{card.icon}</span>
+                    <span className="truncate text-[8px] font-bold uppercase tracking-[0.04em] text-[#6b7484]">{card.label}</span>
+                  </div>
+                  <div className="mt-1 text-[14px] font-bold tracking-tight text-[#1b2230]">{card.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Traffic timeline */}
             <div className="rounded-[10px] border border-[#e6e8ef] bg-white px-3 py-2.5">
-              <p className="text-[10.5px] font-semibold text-[#1b2230]">Traffic timeline · {metric.label}</p>
-              <div className="mt-2 flex h-[60px] items-end gap-[5px]">
-                {metric.bars.map((h, i) => (
-                  <div key={i} className="flex-1 rounded-t-[2px] transition-all duration-300" style={{ height: `${h}%`, background: metric.color }} />
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] font-semibold text-[#1b2230]">Traffic timeline</p>
+                <div className="flex gap-1">
+                  {(Object.keys(ANALYTICS_SERIES_COLOR) as Array<keyof typeof ANALYTICS_SERIES_COLOR>).map((key) => {
+                    const on = seriesOn[key]
+                    const color = ANALYTICS_SERIES_COLOR[key]
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSeriesOn((s) => ({ ...s, [key]: !s[key] }))}
+                        className="flex items-center gap-1 rounded-full border px-[7px] py-[2px] text-[8px] font-semibold transition-colors"
+                        style={{ borderColor: on ? color : '#e7e9ef', color: on ? color : '#9aa2b1' }}
+                      >
+                        <span className="h-[5px] w-[5px] rounded-full" style={{ background: on ? color : 'transparent', border: `1.5px solid ${on ? color : '#c5c9d4'}` }} />
+                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="mt-2 flex h-[56px] items-end gap-[4px]">
+                {ANALYTICS_TIMELINE.map((d, i) => (
+                  <div key={i} className="flex flex-1 items-end justify-center gap-[2px]" style={{ height: '100%' }}>
+                    {(Object.keys(ANALYTICS_SERIES_COLOR) as Array<keyof typeof ANALYTICS_SERIES_COLOR>).filter((key) => seriesOn[key]).map((key) => (
+                      <div key={key} className="flex-1 rounded-t-[2px] transition-all duration-300" style={{ height: `${d[key]}%`, background: ANALYTICS_SERIES_COLOR[key] }} />
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
 
+            {/* Source performance */}
             <div className="flex-1 overflow-hidden rounded-[10px] border border-[#e6e8ef] bg-white">
-              {sources.map((s) => (
+              {ANALYTICS_SOURCES.map((s) => (
                 <div key={s.label} className="flex items-center gap-2 border-b border-[#f1f3f7] px-2.5 py-2 last:border-0">
-                  <span className="min-w-0 flex-1 truncate text-[11.5px] font-semibold text-[#1b2230]">{s.label}</span>
+                  <span className="min-w-0 flex-1 truncate text-[10.5px] font-semibold text-[#1b2230]">{s.label}</span>
+                  <span className="w-10 flex-shrink-0 text-right text-[9.5px] font-mono text-[#8a93a3]">{s.visitors}</span>
                   <span className="h-1 w-12 flex-shrink-0 overflow-hidden rounded-[2px] bg-[#edeff5]">
                     <span className="block h-full rounded-[2px] bg-[#394BE8]" style={{ width: `${s.conv}%` }} />
                   </span>
-                  <span className="w-9 flex-shrink-0 text-right text-[10.5px] font-mono text-[#1b2230]">{s.conv}%</span>
+                  <span className="w-9 flex-shrink-0 text-right text-[10px] font-mono text-[#1b2230]">{s.conv}%</span>
                 </div>
               ))}
             </div>
@@ -1133,72 +1138,6 @@ function AnalyticsSection() {
         </DashboardChrome>
         </Reveal>
 
-      </div>
-    </section>
-  )
-}
-
-// ─── How It Works ─────────────────────────────────────────────────────────────
-
-function HowItWorks() {
-  return (
-    <section style={{ background: '#fff', borderTop: '1px solid #f0f1f4', borderBottom: '1px solid #f0f1f4' }}>
-      <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '92px 28px' }}>
-        <div style={{ textAlign: 'center', maxWidth: '560px', margin: '0 auto 56px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#394be8', letterSpacing: '0.02em' }}>How it works</span>
-          <h2 style={{ fontFamily: newsreaderStyle, fontSize: '40px', lineHeight: 1.1, letterSpacing: '-0.01em', fontWeight: 500, margin: '12px 0 0', color: '#171a21' }}>
-            Up and running before your coffee&apos;s cold.
-          </h2>
-        </div>
-
-        <div style={{ position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '27px', left: '16.66%', right: '16.66%', height: '2px', background: 'repeating-linear-gradient(90deg,#cbd3f6 0 7px,transparent 7px 14px)' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '36px', position: 'relative' }}>
-
-            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: '#394be8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '19px', boxShadow: '0 0 0 8px #fff,0 6px 16px -6px rgba(57,75,232,.6)', marginBottom: '24px' }}>1</div>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 8px', color: '#171a21' }}>Grab your handle</h3>
-              <p style={{ fontSize: '14px', lineHeight: 1.55, color: '#5c6573', margin: '0 0 18px', maxWidth: '260px' }}>Pick your vuala.dev name and pull in projects from GitHub.</p>
-              <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', background: '#fbfcfe', border: '1px solid #eef0f3', borderRadius: '11px', padding: '7px 8px 7px 13px' }}>
-                <span style={{ fontSize: '13px', color: '#9aa2b1' }}>vuala.dev/</span>
-                <span style={{ fontSize: '13px', color: '#171a21', fontWeight: 600 }}>maya</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff', background: '#394be8', padding: '5px 11px', borderRadius: '7px', marginLeft: '4px' }}>Claim</span>
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: '#394be8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '19px', boxShadow: '0 0 0 8px #fff,0 6px 16px -6px rgba(57,75,232,.6)', marginBottom: '24px' }}>2</div>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 8px', color: '#171a21' }}>Add shipped &amp; upcoming</h3>
-              <p style={{ fontSize: '14px', lineHeight: 1.55, color: '#5c6573', margin: '0 0 18px', maxWidth: '260px' }}>Show what&apos;s live, then post what&apos;s next for people to wishlist.</p>
-              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '7px', width: '215px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fbfcfe', border: '1px solid #eef0f3', borderRadius: '10px', padding: '8px 11px' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
-                  <span style={{ fontSize: '12.5px', color: '#171a21', fontWeight: 600, flex: 1, textAlign: 'left' }}>Hued</span>
-                  <span style={{ fontSize: '11px', color: '#9aa2b1' }}>Shipped</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f6f8fe', border: '1px solid #e6ebfb', borderRadius: '10px', padding: '8px 11px' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#394be8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z" /></svg>
-                  <span style={{ fontSize: '12.5px', color: '#171a21', fontWeight: 600, flex: 1, textAlign: 'left' }}>Hued for Teams</span>
-                  <span style={{ fontSize: '11px', color: '#5566c9' }}>Next</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: '#394be8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '19px', boxShadow: '0 0 0 8px #fff,0 6px 16px -6px rgba(57,75,232,.6)', marginBottom: '24px' }}>3</div>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 8px', color: '#171a21' }}>Share &amp; watch it grow</h3>
-              <p style={{ fontSize: '14px', lineHeight: 1.55, color: '#5c6573', margin: '0 0 18px', maxWidth: '260px' }}>Drop your link anywhere and let the wishlist fill up.</p>
-              <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '10px', background: '#fbfcfe', border: '1px solid #eef0f3', borderRadius: '11px', padding: '10px 14px' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 700, fontSize: '14px', color: '#16a34a' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
-                  +12
-                </span>
-                <span style={{ fontSize: '12.5px', color: '#5c6573' }}>new wishes this week</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
       </div>
     </section>
   )
@@ -1221,9 +1160,8 @@ function PricingSection() {
   }
 
   const features = {
-    free: ['Your vuala.dev page', 'Up to 5 projects', '1 wishlist idea', 'GitHub import'],
-    pro: ['Everything in Free, plus', 'Unlimited projects', 'Unlimited wishlists + email capture', 'Custom domain & live metrics', 'Full analytics'],
-    studio: ['Everything in Pro, plus', 'Up to 5 team profiles', 'Collaborator roles', 'API access & webhooks', 'Priority support'],
+    free: ['Your vuala.bio page', 'Up to 3 projects', '1 roadmap board', 'Unlimited wishlists & email capture'],
+    pro: ['Everything in Free, plus', 'Unlimited projects', 'Unlimited roadmap boards', 'Export wishlists to CSV', 'Remove the Vuala badge'],
   }
 
   return (
@@ -1244,10 +1182,9 @@ function PricingSection() {
             <button onClick={() => setBilling('monthly')} style={segStyle(!annual)}>Monthly</button>
             <button onClick={() => setBilling('annual')} style={segStyle(annual)}>Annual</button>
           </div>
-          <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#2f3bb5', background: '#eef1fd', padding: '4px 10px', borderRadius: '999px' }}>2 months free</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '18px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '18px', alignItems: 'start', maxWidth: '700px', margin: '0 auto' }}>
 
           {/* Free */}
           <div style={{ background: '#fff', border: '1px solid #ebedf1', borderRadius: '18px', padding: '30px' }}>
@@ -1275,7 +1212,7 @@ function PricingSection() {
             <div style={{ fontSize: '15px', fontWeight: 700, color: '#2f3bb5', marginBottom: '6px' }}>Pro</div>
             <p style={{ fontSize: '13.5px', color: '#8a93a3', margin: '0 0 22px', lineHeight: 1.5 }}>For makers collecting real demand.</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '2px' }}>
-              <span style={{ fontFamily: newsreaderStyle, fontSize: '44px', fontWeight: 500, color: '#171a21' }}>${annual ? '7' : '9'}</span>
+              <span style={{ fontFamily: newsreaderStyle, fontSize: '44px', fontWeight: 500, color: '#171a21' }}>${annual ? '4' : '6'}</span>
               <span style={{ fontSize: '14px', color: '#9aa2b1' }}>/ mo</span>
             </div>
             <div style={{ fontSize: '12.5px', color: '#9aa2b1', marginBottom: '18px' }}>{annual ? 'billed annually' : 'billed monthly'}</div>
@@ -1291,74 +1228,6 @@ function PricingSection() {
             </div>
           </div>
 
-          {/* Studio */}
-          <div style={{ background: '#fff', border: '1px solid #ebedf1', borderRadius: '18px', padding: '30px' }}>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#171a21', marginBottom: '6px' }}>Studio</div>
-            <p style={{ fontSize: '13.5px', color: '#8a93a3', margin: '0 0 22px', lineHeight: 1.5 }}>For small teams shipping together.</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '2px' }}>
-              <span style={{ fontFamily: newsreaderStyle, fontSize: '44px', fontWeight: 500, color: '#171a21' }}>${annual ? '23' : '29'}</span>
-              <span style={{ fontSize: '14px', color: '#9aa2b1' }}>/ mo</span>
-            </div>
-            <div style={{ fontSize: '12.5px', color: '#9aa2b1', marginBottom: '18px' }}>{annual ? 'billed annually' : 'billed monthly'}</div>
-            <a href={`/register?plan=studio&cycle=${billing}`} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', border: '1px solid #e4e7ec', color: '#1b1f27', fontWeight: 600, fontSize: '14px', padding: '11px', borderRadius: '10px', marginBottom: '24px' }}>
-              Start free trial
-            </a>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {features.studio.map((f, i) => (
-                <div key={f} style={{ display: 'flex', gap: '9px', alignItems: 'center', fontSize: '14px', color: i === 0 ? '#171a21' : '#5c6573', fontWeight: i === 0 ? 600 : 400 }}>
-                  <Check />{f}
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ─── FAQ ──────────────────────────────────────────────────────────────────────
-
-const FAQ_ITEMS = [
-  { q: 'What exactly is a wishlist?', a: 'Post an idea you might build, and visitors can upvote it and leave an email. You learn what people actually want, and you get a warm list to notify the day it ships.' },
-  { q: 'Is there really a free plan?', a: 'Yes. The Free plan gives you a public page, up to five projects, and one wishlist idea — no credit card, ever. Upgrade only if you outgrow it.' },
-  { q: 'Can I use my own domain?', a: 'On Pro and Studio you can point any custom domain at your page. SSL and link previews are handled automatically.' },
-  { q: 'How do the live metrics work?', a: 'Connect GitHub, Stripe, or your analytics once and Vuala keeps stars, revenue, and traffic current on your page. You choose what stays public.' },
-  { q: 'Can I export my data?', a: 'Always. Export your page, projects, wishlist votes, and captured emails as CSV or JSON whenever you like. No lock-in.' },
-  { q: 'Who is Vuala for?', a: 'Indie developers, designers, and small studios — anyone who ships things and wants a calm place to show them and gauge what to build next.' },
-]
-
-function FaqSection() {
-  const [open, setOpen] = useState<number>(0)
-
-  return (
-    <section id="faq" style={{ background: '#fff', borderTop: '1px solid #f0f1f4' }}>
-      <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '96px 28px', display: 'grid', gridTemplateColumns: '0.74fr 1.26fr', gap: '60px', alignItems: 'start' }}>
-        <div>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#394be8', letterSpacing: '0.02em' }}>FAQ</span>
-          <h2 style={{ fontFamily: newsreaderStyle, fontSize: '36px', lineHeight: 1.12, letterSpacing: '-0.01em', fontWeight: 500, margin: '12px 0 14px', color: '#171a21' }}>Good questions.</h2>
-          <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#8a93a3', margin: 0 }}>
-            Email <span style={{ color: '#394be8', fontWeight: 600 }}>hey@vuala.dev</span> and a real person replies.
-          </p>
-        </div>
-        <div style={{ borderTop: '1px solid #f0f1f4' }}>
-          {FAQ_ITEMS.map(({ q, a }, i) => (
-            <div key={q} style={{ borderBottom: '1px solid #f0f1f4' }}>
-              <button
-                onClick={() => setOpen(o => o === i ? -1 : i)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', background: 'none', border: 'none', cursor: 'pointer', padding: '21px 0', textAlign: 'left', fontFamily: 'inherit' }}
-              >
-                <span style={{ fontSize: '16.5px', fontWeight: 600, color: '#171a21' }}>{q}</span>
-                <span style={{ flexShrink: 0, color: '#9aa2b1' }}>
-                  <PlusMinusIcon open={open === i} />
-                </span>
-              </button>
-              {open === i && (
-                <p style={{ margin: 0, padding: '0 0 22px', fontSize: '14.5px', lineHeight: 1.65, color: '#5c6573', maxWidth: '640px' }}>{a}</p>
-              )}
-            </div>
-          ))}
         </div>
       </div>
     </section>
@@ -1388,7 +1257,7 @@ function FinalCta() {
             Showcase what you&apos;ve built, collect wishlists for what&apos;s next, and share one link. Free to start.
           </p>
           <form onSubmit={claimIt} style={{ display: 'flex', alignItems: 'center', gap: '7px', background: '#fff', border: '1px solid #e0e5fb', borderRadius: '13px', padding: '6px 6px 6px 16px', maxWidth: '430px', margin: '0 auto', boxShadow: '0 1px 2px rgba(20,24,40,.04),0 14px 36px -18px rgba(57,75,232,.3)' }}>
-            <span style={{ fontSize: '15px', color: '#9aa2b1', whiteSpace: 'nowrap' }}>vuala.dev/</span>
+            <span style={{ fontSize: '15px', color: '#9aa2b1', whiteSpace: 'nowrap' }}>vuala.bio/</span>
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="yourname" style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'inherit', fontSize: '15px', color: '#1b1f27', padding: '9px 0', fontWeight: 500 }} />
             <button type="submit" style={{ border: 'none', background: '#394be8', color: '#fff', fontFamily: 'inherit', fontWeight: 600, fontSize: '14px', padding: '11px 18px', borderRadius: '9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               Claim it
@@ -1418,13 +1287,10 @@ export default function HomePage() {
       <PageSection />
       <WishlistsDashboardSection />
       <WishlistSpotlight />
-      <HighlightsStrip />
       <InboxSection />
       <RoadmapSection />
       <AnalyticsSection />
-      <HowItWorks />
       <PricingSection />
-      <FaqSection />
       <FinalCta />
       <SiteFooter />
     </div>

@@ -248,6 +248,7 @@ export default function FeaturesPage() {
     target: '',
     notes: '',
   })
+  const [boardError, setBoardError] = useState('')
   const [boardForm, setBoardForm] = useState({
     product_id: '',
     is_shared: false,
@@ -413,9 +414,10 @@ export default function FeaturesPage() {
     setDeleteCandidate(null)
   }
 
-  const saveBoard = () => {
+  const saveBoard = async () => {
     if (!boardForm.product_id) return
 
+    const previousActiveBoardId = activeBoardId
     const nextBoard: RoadmapBoard = normalizeBoard({
       id: uid(),
       product_id: boardForm.product_id,
@@ -426,9 +428,25 @@ export default function FeaturesPage() {
 
     setBoards((current) => [...current, nextBoard])
     setActiveBoardId(nextBoard.id)
-    persistBoard(nextBoard)
-    setBoardModalOpen(false)
-    setBoardForm({ product_id: '', is_shared: false })
+    setBoardError('')
+
+    try {
+      const res = await api.post('/roadmaps', {
+        product_id: nextBoard.product_id,
+        is_shared: nextBoard.is_shared,
+        items: nextBoard.items,
+      })
+      const saved = normalizeBoard(res.data)
+      setBoards((current) => current.map((item) => (item.id === nextBoard.id ? saved : item)))
+      setActiveBoardId(saved.id)
+      setBoardModalOpen(false)
+      setBoardForm({ product_id: '', is_shared: false })
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setBoards((current) => current.filter((item) => item.id !== nextBoard.id))
+      setActiveBoardId(previousActiveBoardId)
+      setBoardError(message ?? "You've reached your plan's roadmap limit. Upgrade to Pro for unlimited roadmaps.")
+    }
   }
 
   return (
@@ -478,6 +496,7 @@ export default function FeaturesPage() {
               type="button"
               onClick={() => {
                 setBoardForm({ product_id: availableProjects[0]?.id ?? '', is_shared: false })
+                setBoardError('')
                 setBoardModalOpen(true)
               }}
               className="mt-3 inline-flex h-[32px] w-full items-center justify-center gap-[6px] rounded-[8px] border border-[#d9ddf9] bg-[#f4f5fe] px-[11px] text-[13px] font-semibold text-[#394BE8] transition-colors hover:bg-[#eef0ff]"
@@ -879,6 +898,12 @@ export default function FeaturesPage() {
                   className="h-4 w-4 rounded border-[#cbd5e1] text-[#394BE8] focus:ring-[#394BE8]"
                 />
               </label>
+
+              {boardError && (
+                <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] font-medium text-amber-700">
+                  {boardError}
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-2 pt-1">
                 <button

@@ -9,6 +9,7 @@ interface User {
   email: string
   username: string
   avatar_url: string | null
+  onboarding_completed_at: string | null
   plan: 'free' | 'pro' | 'studio'
   plan_billing_cycle: 'monthly' | 'annual' | null
   plan_status: string | null

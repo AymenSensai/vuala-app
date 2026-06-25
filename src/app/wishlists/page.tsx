@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import api from '@/lib/api'
-import { ArrowUpRight, CalendarDays, Heart } from 'lucide-react'
+import { ArrowBigUpDash, ArrowUpRight, CalendarDays, Heart } from 'lucide-react'
 import { SiteFooter, SiteHeader } from '@/components/SiteChrome'
 
 interface WishlistProject {
@@ -29,12 +29,44 @@ function formatLaunchDate(date: string | null) {
 export default function WishlistsPage() {
   const [projects, setProjects] = useState<WishlistProject[]>([])
   const [loading, setLoading] = useState(true)
+  const [wishlistMenuProductId, setWishlistMenuProductId] = useState<string | null>(null)
+  const [wishlistForms, setWishlistForms] = useState<Record<string, string>>({})
+  const [wishlistSubmitted, setWishlistSubmitted] = useState<Record<string, 'joined' | 'already'>>({})
+  const [wishlistLoading, setWishlistLoading] = useState<string | null>(null)
 
   useEffect(() => {
     api.get('/wishlists')
       .then((res) => setProjects(res.data.products ?? []))
       .finally(() => setLoading(false))
   }, [])
+
+  const wishlistMenuProject = wishlistMenuProductId
+    ? projects.find((project) => project.id === wishlistMenuProductId) ?? null
+    : null
+
+  const handleWishlistSubmit = async (e: React.FormEvent, project: WishlistProject) => {
+    e.preventDefault()
+    const email = wishlistForms[project.id]?.trim()
+    if (!email) return
+
+    setWishlistLoading(project.id)
+    try {
+      const res = await api.post(`/storefront/${project.creator.username}/leads`, { email, product_id: project.id })
+      const alreadyJoined = Boolean(res.data?.already_joined)
+      setWishlistSubmitted((current) => ({ ...current, [project.id]: alreadyJoined ? 'already' : 'joined' }))
+      setWishlistForms((current) => ({ ...current, [project.id]: '' }))
+      setWishlistMenuProductId(null)
+      if (!alreadyJoined) {
+        setProjects((current) => current.map((p) => (
+          p.id === project.id ? { ...p, wishlist_count: p.wishlist_count + 1 } : p
+        )))
+      }
+    } catch {
+      alert('Failed to join the wishlist. Please try again.')
+    } finally {
+      setWishlistLoading(null)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] text-slate-950">
@@ -112,13 +144,21 @@ export default function WishlistsPage() {
                           </a>
                         )}
                       </div>
-                      <div className="rounded-2xl bg-[#EEF1FF] px-4 py-2 text-center text-[#394BE8]">
-                        <p className="inline-flex items-center justify-center gap-1 text-xl font-black">
-                          {project.wishlist_count}
-                          <ArrowUpRight className="h-4 w-4 rotate-90" />
-                        </p>
-                        <p className="text-[11px] font-bold uppercase tracking-wide">wishes</p>
-                      </div>
+                      {wishlistSubmitted[project.id] ? (
+                        <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700">
+                          {wishlistSubmitted[project.id] === 'already' ? 'Already on the wishlist' : 'You are on the list'}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setWishlistMenuProductId(project.id)}
+                          className="flex h-8 items-center gap-1.5 rounded-xl bg-[#394BE8] px-3 text-xs font-medium text-white transition-colors hover:bg-[#2f3fd1]"
+                        >
+                          Wishlist
+                          {project.wishlist_count > 0 && <span>{project.wishlist_count}</span>}
+                          <ArrowBigUpDash className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </article>
                 )
@@ -128,6 +168,47 @@ export default function WishlistsPage() {
         </div>
       </section>
       <SiteFooter />
+
+      {wishlistMenuProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 px-4" onClick={() => setWishlistMenuProductId(null)}>
+          <form
+            onSubmit={(e) => handleWishlistSubmit(e, wishlistMenuProject)}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-xl"
+          >
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-slate-900">{wishlistMenuProject.title}</p>
+              <p className="mt-1 text-sm text-slate-500">Join the wishlist for launch updates.</p>
+            </div>
+            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">Email</label>
+            <input
+              type="email"
+              required
+              autoFocus
+              value={wishlistForms[wishlistMenuProject.id] ?? ''}
+              onChange={(e) => setWishlistForms((current) => ({ ...current, [wishlistMenuProject.id]: e.target.value }))}
+              placeholder="you@example.com"
+              className="mt-2 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-100"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setWishlistMenuProductId(null)}
+                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={wishlistLoading === wishlistMenuProject.id}
+                className="h-9 rounded-lg bg-[#394BE8] px-3 text-sm font-medium text-white transition-colors hover:bg-[#2f3fd1] disabled:opacity-60"
+              >
+                {wishlistLoading === wishlistMenuProject.id ? 'Joining...' : 'Join wishlist'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </main>
   )
 }
