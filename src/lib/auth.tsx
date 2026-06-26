@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
 import api from './api'
 
 interface User {
@@ -75,10 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }
 
-  const refresh = async () => {
+  // Stable identity so effects that depend on `refresh` don't re-run on every
+  // render (a changing reference previously caused a verify/refresh loop).
+  const refresh = useCallback(async () => {
     const res = await api.get('/auth/me')
     setUser(res.data)
-  }
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>

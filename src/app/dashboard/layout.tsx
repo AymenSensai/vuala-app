@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
@@ -93,24 +93,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [copied, setCopied] = useState(false)
 
   // After returning from Stripe Checkout, provision the plan immediately
-  // instead of waiting on the (async, often-delayed) webhook.
+  // instead of waiting on the (async, often-delayed) webhook. This must run at
+  // most once: refresh() updates auth state and re-renders, so guarding with a
+  // ref prevents a verify->refresh->re-render->verify loop that would otherwise
+  // hijack navigation by repeatedly rewriting the URL.
+  const billingHandled = useRef(false)
   useEffect(() => {
+    if (billingHandled.current) return
+
     const params = new URLSearchParams(window.location.search)
     if (params.get('billing') !== 'success') return
+    billingHandled.current = true
 
     const sessionId = params.get('session_id')
-    const finish = () => router.replace(pathname)
+    // Strip the billing params from the URL without a router navigation, so we
+    // don't fight any page change the user makes while verify is in flight.
+    const finish = () => window.history.replaceState(null, '', window.location.pathname)
 
-    if (!sessionId) {
-      refresh().catch(() => {}).finally(finish)
-      return
-    }
+    const provision = sessionId
+      ? api.post('/billing/verify', { session_id: sessionId }).then(() => refresh())
+      : refresh()
 
-    api.post('/billing/verify', { session_id: sessionId })
-      .then(() => refresh())
-      .catch(() => {})
-      .finally(finish)
-  }, [pathname, refresh, router])
+    provision.catch(() => {}).finally(finish)
+  }, [refresh])
 
   const copyStoreLink = () => {
     if (!user?.storefront) return

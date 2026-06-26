@@ -168,8 +168,9 @@ export default function SettingsPage() {
     try {
       const res = await api.post('/billing/checkout', { plan, cycle: billingCycle, context: 'settings' })
       window.location.href = res.data.url
-    } catch {
-      setBillingError('Could not start checkout. Please try again.')
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setBillingError(message || 'Could not start checkout. Please try again.')
       setUpgrading(null)
     }
   }
